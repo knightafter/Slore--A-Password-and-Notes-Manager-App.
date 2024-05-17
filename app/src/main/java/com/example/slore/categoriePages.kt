@@ -4,6 +4,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextAlign
@@ -16,7 +17,9 @@ fun PasswordScreen() {
         text = "Create a Password",
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth().offset(x = -120.dp, y = -10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 50.dp), // Add space at the top
         textAlign = TextAlign.Center
     )
 }
@@ -27,7 +30,9 @@ fun ThoughtsScreen() {
         text = "Save Your Thoughts",
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 50.dp), // Add space at the top
         textAlign = TextAlign.Center
     )
 }
@@ -38,7 +43,9 @@ fun NotesScreen() {
         text = "Save Your Notes",
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 50.dp), // Add space at the top
         textAlign = TextAlign.Center
     )
 }
@@ -49,7 +56,9 @@ fun MakeYourOwnScreen(inputText: String?) {
         text = inputText ?: "No input provided",
         fontSize = 32.sp,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 50.dp), // Add space at the top
         textAlign = TextAlign.Center
     )
 }
