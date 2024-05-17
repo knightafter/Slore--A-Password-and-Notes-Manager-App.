@@ -3,6 +3,7 @@ package com.example.slore.SignInProcess
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,12 +48,8 @@ fun SignUpScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
+    //calling the email input field//
+        EmailInputField()
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -93,4 +91,20 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = it, color = Color.Red)        }
     }
+}
+
+//email inout field//
+@Composable
+fun EmailInputField() {
+    var text by remember { mutableStateOf(TextFieldValue("")) }
+    return OutlinedTextField(
+        value = text,
+        leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Email") },
+        //trailingIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
+        onValueChange = {
+            text = it
+        },
+        label = { Text(text = "Email address") },
+        placeholder = { Text(text = "Enter your e-mail") },
+    )
 }

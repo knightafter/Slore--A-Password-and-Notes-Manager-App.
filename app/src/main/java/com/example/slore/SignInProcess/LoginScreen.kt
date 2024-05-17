@@ -48,12 +48,8 @@ fun LoginScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        //calling the email input field//
+        EmailInputField()
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -121,3 +117,5 @@ fun LoginScreen(navController: NavController) {
         }
     }
 }
+
+
