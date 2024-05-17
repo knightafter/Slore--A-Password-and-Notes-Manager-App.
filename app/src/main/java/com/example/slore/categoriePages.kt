@@ -35,7 +35,8 @@ import kotlinx.coroutines.launch
  * ****
  * ******
  *
- * have to add the popback.stack like it
+ * have to add the pop-back.stack like it
+ *
  * Icon(
  *                 imageVector = Icons.Default.ArrowBack,
  *                 contentDescription = "Back",
