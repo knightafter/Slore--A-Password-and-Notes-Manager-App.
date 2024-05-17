@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Slore</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
+</resources>
