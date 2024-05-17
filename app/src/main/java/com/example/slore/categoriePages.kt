@@ -29,6 +29,27 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.launch
 
+
+/**
+ ****
+ * ****
+ * ******
+ *
+ * have to add the popback.stack like it
+ * Icon(
+ *                 imageVector = Icons.Default.ArrowBack,
+ *                 contentDescription = "Back",
+ *                 modifier = Modifier.clickable { navController.popBackStack() }
+ *             )
+ *
+ *             so we can go back to the previous state and have to add at almost every place in the app for better user experience
+ *
+ *  *********
+ *  ******
+ *  ****
+ *  ***
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordScreen() {
@@ -100,7 +121,7 @@ fun PasswordScreen() {
                     },
                     textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done
+                        imeAction = ImeAction.Default
                     ),
                     keyboardActions = KeyboardActions(
                         onDone = { keyboardController?.hide() }
