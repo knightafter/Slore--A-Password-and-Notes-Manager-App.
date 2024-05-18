@@ -48,8 +48,12 @@ fun SignUpScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-    //calling the email input field//
-        EmailInputField()
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -73,14 +77,18 @@ fun SignUpScreen(navController: NavController) {
 
         Button(
             onClick = {
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            navController.navigate("home")
-                        } else {
-                            errorMessage = task.exception?.message
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                navController.navigate("home") // Navigate to the main content screen
+                            } else {
+                                errorMessage = task.exception?.message
+                            }
                         }
-                    }
+                } else {
+                    errorMessage = "Email or password cannot be empty"
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -93,18 +101,3 @@ fun SignUpScreen(navController: NavController) {
     }
 }
 
-//email inout field//
-@Composable
-fun EmailInputField() {
-    var text by remember { mutableStateOf(TextFieldValue("")) }
-    return OutlinedTextField(
-        value = text,
-        leadingIcon = { Icon(imageVector = Icons.Filled.Email, contentDescription = "Email") },
-        //trailingIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = null) },
-        onValueChange = {
-            text = it
-        },
-        label = { Text(text = "Email address") },
-        placeholder = { Text(text = "Enter your e-mail") },
-    )
-}

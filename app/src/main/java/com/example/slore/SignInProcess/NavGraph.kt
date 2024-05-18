@@ -22,12 +22,12 @@ fun NavGraph() {
         composable("login") { LoginScreen(navController = navController) }
         composable("signup") { SignUpScreen(navController = navController) }
         composable("main") { MainContent(navController = navController) }
-        composable("password") { PasswordScreen() }
-        composable("thoughts") { ThoughtsScreen() }
-        composable("notes") { NotesScreen() }
+        composable("password") { PasswordScreen(navController = navController) }
+        composable("thoughts") { ThoughtsScreen(navController = navController) }
+        composable("emails") { EmailsScreen(navController = navController) }
         composable("makeYourOwn/{inputText}") { backStackEntry ->
             val inputText = backStackEntry.arguments?.getString("inputText")
-            MakeYourOwnScreen(inputText)
+            MakeYourOwnScreen(inputText = inputText, navController = navController)
         }
         composable("home") { HomeScreen(navController) }
         composable("forgotPassword") {

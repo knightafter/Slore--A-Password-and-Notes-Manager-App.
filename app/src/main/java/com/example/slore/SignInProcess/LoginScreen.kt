@@ -49,7 +49,12 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         //calling the email input field//
-        EmailInputField()
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -87,15 +92,18 @@ fun LoginScreen(navController: NavController) {
 
         Button(
             onClick = {
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            navController.navigate("main") // Navigate to the main content screen
-                        } else {
-                            errorMessage = task.exception?.message
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                navController.navigate("main") // Navigate to the main content screen
+                            } else {
+                                errorMessage = task.exception?.message
+                            }
                         }
-                    }
-
+                } else {
+                    errorMessage = "Email or password cannot be empty"
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -117,5 +125,3 @@ fun LoginScreen(navController: NavController) {
         }
     }
 }
-
-

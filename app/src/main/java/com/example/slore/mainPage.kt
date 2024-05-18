@@ -124,16 +124,16 @@ fun MainContent(navController: NavHostController) {
                     title = { Text(text = "Select a category") },
                     text = {
                         LazyColumn {
-                            items(listOf("Password", "Thoughts", "Notes")) { category ->
+                            items(listOf("Passwords", "Emails", "Thoughts")) { category ->
                                 Text(
                                     text = category,
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
                                             when (category) {
-                                                "Password" -> navController.navigate("password")
+                                                "Passwords" -> navController.navigate("password")
                                                 "Thoughts" -> navController.navigate("thoughts")
-                                                "Notes" -> navController.navigate("notes")
+                                                "Emails" -> navController.navigate("Emails")
                                             }
                                             showDialog.value = false
                                         }
