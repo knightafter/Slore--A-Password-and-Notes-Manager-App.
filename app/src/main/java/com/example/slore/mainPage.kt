@@ -95,6 +95,7 @@ fun MainContent(navController: NavHostController) {
                                 .size(50.dp)
                                 .clickable { navController.navigate("openCategory") }
                         )
+
                         Image(
                             painter = painterResource(id = R.drawable.infinite_removebg_preview),
                             contentDescription = "Image 2",

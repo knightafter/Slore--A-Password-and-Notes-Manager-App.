@@ -1,14 +1,12 @@
+package com.example.slore
 
 
 
-
+/*
+* this data class model is to display the data from firestore
+*
+* */
 sealed class CategoryItem
-
-
-data class Note(
-    val heading: String = "",
-    val content: String = ""
-) : CategoryItem()
 
 data class PasswordEntry(
     val heading: String = "",
@@ -26,7 +24,7 @@ data class EmailEntry(
     val content: String = ""
 ) : CategoryItem()
 
-data class MakeYourOwnEntry(
+data class Note(
     val heading: String = "",
     val content: String = ""
 ) : CategoryItem()

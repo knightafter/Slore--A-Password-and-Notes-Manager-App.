@@ -33,6 +33,20 @@ fun NavGraph() {
         composable("forgotPassword") {
             ForgotPasswordScreen(navController = navController)
         }
-        composable("openCategory") { OpenCategoryScreen(navController) }
+
+
+
+        composable("openCategory") {
+            OpenCategoryScreen(navController = navController)
+        }
+        composable("passwords") {
+            PasswordsScreenCategory(navController = navController)
+        }
+        composable("emails") {
+            EmailsEntryScreenCategory(navController = navController)
+        }
+        composable("hello") {
+            NotesScreen(navController = navController)
+        }
     }
 }
