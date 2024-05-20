@@ -24,14 +24,15 @@ fun NavGraph() {
         composable("main") { MainContent(navController = navController) }
         composable("password") { PasswordScreen(navController = navController) }
         composable("thoughts") { ThoughtsScreen(navController = navController) }
-        composable("emails") { EmailsScreen(navController = navController) }
+        composable("Email") { EmailsScreen(navController = navController) }
         composable("makeYourOwn/{inputText}") { backStackEntry ->
             val inputText = backStackEntry.arguments?.getString("inputText")
-            MakeYourOwnScreen(inputText = inputText, navController = navController)
+            MakeYourOwnScreen(navController = navController, inputText = inputText)
         }
         composable("home") { HomeScreen(navController) }
         composable("forgotPassword") {
             ForgotPasswordScreen(navController = navController)
         }
+        composable("openCategory") { OpenCategoryScreen(navController) }
     }
 }

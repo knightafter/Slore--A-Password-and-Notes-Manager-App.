@@ -1,5 +1,9 @@
 package com.example.slore
 
+import EmailEntry
+import MakeYourOwnEntry
+import Note
+import PasswordEntry
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp

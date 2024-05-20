@@ -90,10 +90,10 @@ fun MainContent(navController: NavHostController) {
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.categorie_removebg_preview),
-                            contentDescription = "Image 1",
+                            contentDescription = "Category Image",
                             modifier = Modifier
                                 .size(50.dp)
-                                .clickable { /* Handle click here */ }
+                                .clickable { navController.navigate("openCategory") }
                         )
                         Image(
                             painter = painterResource(id = R.drawable.infinite_removebg_preview),
@@ -107,7 +107,7 @@ fun MainContent(navController: NavHostController) {
                             contentDescription = "Image 3",
                             modifier = Modifier
                                 .size(40.dp)
-                                .clickable { /* Handle click here */ }
+                                .clickable { navController.navigate("openTimeline") }
                         )
                     }
                 }
