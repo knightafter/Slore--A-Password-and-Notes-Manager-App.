@@ -19,17 +19,19 @@ data class PasswordEntry(
 
 
 data class EmailEntry(
+    val id: String = "",
     val heading: String = "",
-    val sender: String = "",
-    val recipient: String = "",
-    val subject: String = "",
-    val content: String = "",
+    val username: String = "",
+    val password: String = "",
     val message: String = ""
-) : CategoryItem()
+)
 
 data class Note(
+    val id: String = "",
     val heading: String = "",
     val content: String = ""
-) : CategoryItem()
+)
+
+
 
 

@@ -23,8 +23,8 @@ fun NavGraph() {
         composable("signup") { SignUpScreen(navController = navController) }
         composable("main") { MainContent(navController = navController) }
         composable("password") { PasswordScreen(navController = navController) }
-        composable("thoughts") { ThoughtsScreen(navController = navController) }
-        composable("Email") { EmailsScreen(navController = navController) }
+        composable("thoughts") { NotesScreen(navController = navController) }
+        composable("Emails") { EmailsScreen(navController = navController) }
         composable("makeYourOwn/{inputText}") { backStackEntry ->
             val inputText = backStackEntry.arguments?.getString("inputText")
             MakeYourOwnScreen(navController = navController, inputText = inputText)
@@ -40,6 +40,20 @@ fun NavGraph() {
             val passwordId = backStackEntry.arguments?.getString("passwordId")
             if (passwordId != null) {
                 PasswordDetailScreen(navController = navController, passwordId = passwordId)
+            }
+        }
+
+        composable("emailDetail/{emailId}") { backStackEntry ->
+            val emailId = backStackEntry.arguments?.getString("emailId")
+            if (emailId != null) {
+                EmailDetailScreen(navController = navController, emailId = emailId)
+            }
+        }
+
+        composable("noteDetail/{noteId}") { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("noteId")
+            if (noteId != null) {
+                NoteDetailScreen(navController = navController, noteId = noteId)
             }
         }
     }

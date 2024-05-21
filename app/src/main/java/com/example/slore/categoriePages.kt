@@ -40,6 +40,7 @@ import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 
 /**
@@ -300,10 +301,8 @@ fun PasswordScreen(navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 fun EmailsScreen(navController: NavHostController) {
     var heading by remember { mutableStateOf(TextFieldValue("")) }
-    var sender by remember { mutableStateOf(TextFieldValue("")) }
-    var recipient by remember { mutableStateOf(TextFieldValue("")) }
-    var subject by remember { mutableStateOf(TextFieldValue("")) }
-    var content by remember { mutableStateOf(TextFieldValue("")) }
+    var username by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
     var message by remember { mutableStateOf(TextFieldValue("")) } // New field
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -333,53 +332,21 @@ fun EmailsScreen(navController: NavHostController) {
                             val firestore = FirebaseFirestore.getInstance()
                             val emailEntry = EmailEntry(
                                 heading = heading.text,
-                                sender = sender.text,
-                                recipient = recipient.text,
-                                subject = subject.text,
-                                content = content.text,
-                                message = message.text // Save the message
+                                username = username.text,
+                                password = password.text,
+                                message = message.text
                             )
-
-                            firestore.collection("emails")
-                                .add(emailEntry)
-                                .addOnSuccessListener { documentReference ->
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                        navController.navigate("main") {
-                                            popUpTo("Emails") { inclusive = true }
-                                        }
-                                    }
-                                }
-                                .addOnFailureListener { e ->
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                    }
-                                }
+                            scope.launch {
+                                firestore.collection("emails").add(emailEntry).await()
+                                showPopupMessage = true
+                            }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Save",
-                            tint = Color(0xFF000080) // Navy blue color
-                        )
+                        Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080)) // Navy blue color
                     }
                 }
 
-                Text(
-                    text = "Save Your Emails",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 50.dp),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Add TextField for each field in EmailEntry
+                // Heading field
                 TextField(
                     value = heading,
                     onValueChange = { heading = it },
@@ -396,9 +363,41 @@ fun EmailsScreen(navController: NavHostController) {
                     )
                 )
 
-                // Repeat for other fields...
+                // Username field
+                TextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    placeholder = { Text(text = "Username...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
 
-                // New message field
+                // Password field
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    placeholder = { Text(text = "Password...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                // Message field
                 TextField(
                     value = message,
                     onValueChange = { message = it },
@@ -415,58 +414,24 @@ fun EmailsScreen(navController: NavHostController) {
                     )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(16.dp)
-                        .background(Color(0xFFF7E8C2))
-                ) {
-                    var textFieldHeight by remember { mutableStateOf(0) }
-                    var screenHeightPx by remember { mutableStateOf(0) }
-
-                    DisposableEffect(context) {
-                        val displayMetrics = context.resources.displayMetrics
-                        screenHeightPx = displayMetrics.heightPixels
-                        onDispose { }
-                    }
-
-                    BasicTextField(
-                        value = content,
-                        onValueChange = {
-                            content = it
-                        },
-                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Default
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { keyboardController?.hide() }
-                        ),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onGloballyPositioned { coordinates ->
-                                textFieldHeight = coordinates.size.height
-                                if (textFieldHeight > screenHeightPx - 100) {
-                                    scope.launch {
-                                        scrollState.animateScrollTo(scrollState.maxValue)
-                                    }
-                                }
+                // Show popup message when the data is saved
+                if (showPopupMessage) {
+                    AlertDialog(
+                        onDismissRequest = { showPopupMessage = false },
+                        title = { Text("Save Successful") },
+                        text = { Text("Your email has been saved successfully.") },
+                        confirmButton = {
+                            Button(onClick = { showPopupMessage = false }) {
+                                Text("OK")
                             }
+                        }
                     )
-                }
-            }
-
-            if (showPopupMessage) {
-                CenteredPopupMessage(message = "Your input is saved.") {
-                    showPopupMessage = false
                 }
             }
         }
     }
 }
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun ThoughtsScreen(navController: NavController) {
@@ -762,3 +727,4 @@ fun MakeYourOwnScreen(inputText: String?, navController: NavController) {
         }
     }
 }
+

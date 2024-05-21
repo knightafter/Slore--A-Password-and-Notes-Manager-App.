@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import kotlinx.coroutines.delay
@@ -59,7 +61,7 @@ fun OpenCategoryScreen(navController: NavHostController) {
                 .clickable { navController.navigate("passwords") }
         )
         BasicText(
-            text = "Emails",
+            text = "Email",
             modifier = Modifier
                 .padding(vertical = 8.dp)
                 .clickable { navController.navigate("emailsscreen") }
@@ -200,6 +202,7 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(top = 86.dp)
                 ) {
                     Text(
                         text = heading.text,
@@ -287,8 +290,10 @@ fun EmailsEntryScreenCategory(navController: NavHostController) {
     LaunchedEffect(Unit) {
         try {
             val firestore = FirebaseFirestore.getInstance()
-            val snapshot = firestore.collection("emails").get().await()
-            val fetchedItems = snapshot.documents.mapNotNull { it.toObject<EmailEntry>() }
+            val querySnapshot = firestore.collection("emails").get().await()
+            val fetchedItems = querySnapshot.documents.mapNotNull {
+                it.toObject<EmailEntry>()?.copy(id = it.id) // Include the document ID here
+            }
             items = fetchedItems
             loading = false
         } catch (e: Exception) {
@@ -300,37 +305,184 @@ fun EmailsEntryScreenCategory(navController: NavHostController) {
     if (loading) {
         CircularProgressIndicator(modifier = Modifier.padding(16.dp))
     } else {
-        EmailItemList(items)
+        EmailItemList(navController, items)
     }
 }
 
 @Composable
-fun EmailItemList(items: List<EmailEntry>) {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+fun EmailItemList(navController: NavHostController, items: List<EmailEntry>) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items.forEach { item ->
-            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        items(items) { emailEntry ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate("emailDetail/${emailEntry.id}")
+                    },
+                shape = RoundedCornerShape(8.dp)
+            ) {
                 Text(
-                    text = item.heading,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    text = emailEntry.heading,
+                    modifier = Modifier.padding(16.dp),
+                    style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 )
-                Text(text = "Sender: ${item.sender}", style = TextStyle(fontSize = 16.sp))
-                Text(text = "Recipient: ${item.recipient}", style = TextStyle(fontSize = 16.sp))
-                Text(text = "Subject: ${item.subject}", style = TextStyle(fontSize = 16.sp))
-                Text(text = "Content: ${item.content}", style = TextStyle(fontSize = 16.sp))
             }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
         }
     }
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun EmailDetailScreen(navController: NavHostController, emailId: String) {
+    var heading by remember { mutableStateOf(TextFieldValue("")) }
+    var username by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
+    var message by remember { mutableStateOf(TextFieldValue("")) }
+    var showPopupMessage by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
+    LaunchedEffect(emailId) {
+        val firestore = FirebaseFirestore.getInstance()
+        try {
+            val document = firestore.collection("emails").document(emailId).get().await()
+            val emailEntry = document.toObject<EmailEntry>()
+            if (emailEntry != null) {
+                heading = TextFieldValue(emailEntry.heading)
+                username = TextFieldValue(emailEntry.username)
+                password = TextFieldValue(emailEntry.password)
+                message = TextFieldValue(emailEntry.message)
+            }
+        } catch (e: Exception) {
+            Log.e("EmailDetailScreen", "Error loading email data", e)
+        }
+    }
 
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Edit Email") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            try {
+                                val firestore = FirebaseFirestore.getInstance()
+                                val updatedEmailEntry = EmailEntry(
+                                    id = emailId,
+                                    heading = heading.text,
+                                    username = username.text,
+                                    password = password.text,
+                                    message = message.text
+                                )
+                                firestore.collection("emails").document(emailId).set(updatedEmailEntry).await()
+                                showPopupMessage = true
+                            } catch (e: Exception) {
+                                Log.e("EmailDetailScreen", "Error updating email data", e)
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080)) // Navy blue color
+                    }
+                }
+            )
+        },
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF7E8C2)) // Background color
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 86.dp)
+                ) {
+                    Text(
+                        text = heading.text,
+                        style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(8.dp)
+                    )
 
+                    TextField(
+                        value = heading,
+                        onValueChange = { heading = it },
+                        placeholder = { Text(text = "Heading...") },
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        placeholder = { Text(text = "Username...") },
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = { Text(text = "Password...") },
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = message,
+                        onValueChange = { message = it },
+                        placeholder = { Text(text = "Message...") },
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        singleLine = false, // Make it multiline
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Add this Popup to show the message
+                    if (showPopupMessage) {
+                        AlertDialog(
+                            onDismissRequest = { showPopupMessage = false },
+                            title = { Text("Update Successful") },
+                            text = { Text("Your email has been updated successfully.") },
+                            confirmButton = {
+                                Button(onClick = {
+                                    showPopupMessage = false
+                                    navController.navigate("emails") {
+                                        popUpTo("emailDetail/$emailId") { inclusive = true }
+                                    }
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
 
 
 
@@ -339,12 +491,13 @@ fun NotesScreen(navController: NavHostController) {
     var items by remember { mutableStateOf<List<Note>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    
     LaunchedEffect(Unit) {
         try {
             val firestore = FirebaseFirestore.getInstance()
-            val snapshot = firestore.collection("Thoughts").get().await()
-            val fetchedItems = snapshot.documents.mapNotNull { it.toObject<Note>() }
+            val querySnapshot = firestore.collection("Thoughts").get().await()
+            val fetchedItems = querySnapshot.documents.mapNotNull {
+                it.toObject<Note>()?.copy(id = it.id)
+            }
             items = fetchedItems
             loading = false
         } catch (e: Exception) {
@@ -356,28 +509,138 @@ fun NotesScreen(navController: NavHostController) {
     if (loading) {
         CircularProgressIndicator(modifier = Modifier.padding(16.dp))
     } else {
-        NoteItemList(items)
+        NoteItemList(navController, items)
     }
 }
 
 @Composable
-fun NoteItemList(items: List<Note>) {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+fun NoteItemList(navController: NavHostController, items: List<Note>) {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items.forEach { item ->
-            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        items(items) { note ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        navController.navigate("noteDetail/${note.id}")
+                    },
+                shape = RoundedCornerShape(8.dp)
+            ) {
                 Text(
-                    text = item.heading,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    text = note.heading,
+                    modifier = Modifier.padding(16.dp),
+                    style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold)
                 )
-                Text(text = item.content, style = TextStyle(fontSize = 16.sp))
             }
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun NoteDetailScreen(navController: NavHostController, noteId: String) {
+    var heading by remember { mutableStateOf(TextFieldValue("")) }
+    var content by remember { mutableStateOf(TextFieldValue("")) }
+    var showPopupMessage by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
+    LaunchedEffect(noteId) {
+        val firestore = FirebaseFirestore.getInstance()
+        try {
+            val document = firestore.collection("Thoughts").document(noteId).get().await()
+            val note = document.toObject<Note>()
+            if (note != null) {
+                heading = TextFieldValue(note.heading)
+                content = TextFieldValue(note.content)
+            }
+        } catch (e: Exception) {
+            Log.e("NoteDetailScreen", "Error loading note data", e)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Edit Note") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            try {
+                                val firestore = FirebaseFirestore.getInstance()
+                                val updatedNote = Note(
+                                    id = noteId,
+                                    heading = heading.text,
+                                    content = content.text
+                                )
+                                firestore.collection("Thoughts").document(noteId).set(updatedNote).await()
+                                showPopupMessage = true
+                            } catch (e: Exception) {
+                                Log.e("NoteDetailScreen", "Error updating note data", e)
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080))
+                    }
+                }
+            )
+        },
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF7E8C2))
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(top = 86.dp)
+                ) {
+                    BasicTextField(
+                        value = heading,
+                        onValueChange = { heading = it },
+                        textStyle = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    BasicTextField(
+                        value = content,
+                        onValueChange = { content = it },
+                        textStyle = TextStyle(fontSize = 20.sp, color = Color.Gray),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (showPopupMessage) {
+                        AlertDialog(
+                            onDismissRequest = { showPopupMessage = false },
+                            title = { Text("Update Successful") },
+                            text = { Text("Your note has been updated successfully.") },
+                            confirmButton = {
+                                Button(onClick = {
+                                    showPopupMessage = false
+                                    navController.navigate("thoughts") {
+                                        popUpTo("noteDetail/$noteId") { inclusive = true }
+                                    }
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    )
+}

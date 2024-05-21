@@ -1,7 +1,5 @@
 
 
-
-
 sealed class CategoryItem
 
 
@@ -20,10 +18,8 @@ data class PasswordEntry(
 
 data class EmailEntry(
     val heading: String = "",
-    val sender: String = "",
-    val recipient: String = "",
-    val subject: String = "",
-    val content: String = "",
+    val username: String = "",
+    val password: String = "",
     val message: String = ""
 ) : CategoryItem()
 
