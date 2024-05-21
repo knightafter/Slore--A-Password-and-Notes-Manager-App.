@@ -23,7 +23,8 @@ data class EmailEntry(
     val sender: String = "",
     val recipient: String = "",
     val subject: String = "",
-    val content: String = ""
+    val content: String = "",
+    val message: String = ""
 ) : CategoryItem()
 
 data class MakeYourOwnEntry(

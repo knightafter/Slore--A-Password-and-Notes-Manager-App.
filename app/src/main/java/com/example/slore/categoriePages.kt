@@ -304,6 +304,7 @@ fun EmailsScreen(navController: NavHostController) {
     var recipient by remember { mutableStateOf(TextFieldValue("")) }
     var subject by remember { mutableStateOf(TextFieldValue("")) }
     var content by remember { mutableStateOf(TextFieldValue("")) }
+    var message by remember { mutableStateOf(TextFieldValue("")) } // New field
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -335,7 +336,8 @@ fun EmailsScreen(navController: NavHostController) {
                                 sender = sender.text,
                                 recipient = recipient.text,
                                 subject = subject.text,
-                                content = content.text
+                                content = content.text,
+                                message = message.text // Save the message
                             )
 
                             firestore.collection("emails")
@@ -396,6 +398,23 @@ fun EmailsScreen(navController: NavHostController) {
 
                 // Repeat for other fields...
 
+                // New message field
+                TextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    placeholder = { Text(text = "Message...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = false, // Make it multiline
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Box(
@@ -448,7 +467,6 @@ fun EmailsScreen(navController: NavHostController) {
         }
     }
 }
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun ThoughtsScreen(navController: NavController) {

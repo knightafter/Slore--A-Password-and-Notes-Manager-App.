@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,6 +33,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,6 +43,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.TextFieldValue
 
 
@@ -58,7 +62,7 @@ fun OpenCategoryScreen(navController: NavHostController) {
             text = "Emails",
             modifier = Modifier
                 .padding(vertical = 8.dp)
-                .clickable { navController.navigate("emails") }
+                .clickable { navController.navigate("emailsscreen") }
         )
         BasicText(
             text = "Thoughts",
@@ -127,8 +131,6 @@ fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry
     }
 }
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -164,6 +166,26 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        // Update password logic here
+                        scope.launch {
+                            val firestore = FirebaseFirestore.getInstance()
+                            val updatedPasswordEntry = PasswordEntry(
+                                id = passwordId,
+                                heading = heading.text,
+                                username = username.text,
+                                password = password.text,
+                                memorableNotes = memorableNotes.text,
+                                message = message.text
+                            )
+                            firestore.collection("passwords").document(passwordId).set(updatedPasswordEntry).await()
+                            showPopupMessage = true
+                        }
+                    }) {
+                        Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080)) // Navy blue color
+                    }
                 }
             )
         },
@@ -171,24 +193,26 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF7E8C2))
+                    .background(Color(0xFFF7E8C2)) // Background color
                     .padding(16.dp)
+                    .pointerInput(Unit) {} // Prevent the background from intercepting touch events
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
+                    Text(
+                        text = heading.text,
+                        style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(8.dp)
+                    )
+
                     TextField(
                         value = heading,
                         onValueChange = { heading = it },
                         placeholder = { Text(text = "Heading...") },
                         textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
 
                     TextField(
@@ -230,51 +254,23 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                            .background(Color(0xFFF7E8C2))
-                    ) {
-                        BasicTextField(
-                            value = memorableNotes,
-                            onValueChange = {
-                                memorableNotes = it
-                            },
-                            textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-                            modifier = Modifier.fillMaxSize(),
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            // Update password logic here
-                            scope.launch {
-                                showPopupMessage = true
-                                delay(1000L) // Show message for 1 second
-                                navController.navigate("passwords") {
-                                    popUpTo("passwordDetail/$passwordId") { inclusive = true }
-                                }
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    ) {
-                        Text(text = "Save")
-                    }
-
+                    // Add this Popup to show the message
                     if (showPopupMessage) {
-                        Snackbar(
-                            modifier = Modifier.padding(16.dp),
-                            action = {
-                                Button(onClick = { showPopupMessage = false }) {
-                                    Text(text = "Dismiss")
+                        AlertDialog(
+                            onDismissRequest = { showPopupMessage = false },
+                            title = { Text("Update Successful") },
+                            text = { Text("Your password has been updated successfully.") },
+                            confirmButton = {
+                                Button(onClick = {
+                                    showPopupMessage = false
+                                    navController.navigate("passwords") {
+                                        popUpTo("passwordDetail/$passwordId") { inclusive = true }
+                                    }
+                                }) {
+                                    Text("OK")
                                 }
                             }
-                        ) {
-                            Text(text = "Your input is saved.")
-                        }
+                        )
                     }
                 }
             }
