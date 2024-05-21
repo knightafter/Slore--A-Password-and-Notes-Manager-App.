@@ -15,6 +15,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SloreTheme {
                 NavGraph()
+
             }
         }
     }

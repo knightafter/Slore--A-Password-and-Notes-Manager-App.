@@ -9,12 +9,14 @@ package com.example.slore
 sealed class CategoryItem
 
 data class PasswordEntry(
-    val heading: String = "",
-    val username: String = "",
-    val password: String = "",
-    val memorableNotes: String = "",
-    val message: String = ""
+    var id: String = "",
+    var heading: String = "",
+    var username: String = "",
+    var password: String = "",
+    var memorableNotes: String = "",
+    var message: String = ""
 ) : CategoryItem()
+
 
 data class EmailEntry(
     val heading: String = "",
@@ -28,3 +30,5 @@ data class Note(
     val heading: String = "",
     val content: String = ""
 ) : CategoryItem()
+
+

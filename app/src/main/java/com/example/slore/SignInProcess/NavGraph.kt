@@ -30,23 +30,17 @@ fun NavGraph() {
             MakeYourOwnScreen(navController = navController, inputText = inputText)
         }
         composable("home") { HomeScreen(navController) }
-        composable("forgotPassword") {
-            ForgotPasswordScreen(navController = navController)
-        }
+        composable("forgotPassword") { ForgotPasswordScreen(navController = navController) }
+        composable("openCategory") { OpenCategoryScreen(navController = navController) }
+        composable("passwords") { PasswordsScreenCategory(navController = navController) }
+        composable("emails") { EmailsEntryScreenCategory(navController = navController) }
+        composable("hello") { NotesScreen(navController = navController) }
 
-
-
-        composable("openCategory") {
-            OpenCategoryScreen(navController = navController)
-        }
-        composable("passwords") {
-            PasswordsScreenCategory(navController = navController)
-        }
-        composable("emails") {
-            EmailsEntryScreenCategory(navController = navController)
-        }
-        composable("hello") {
-            NotesScreen(navController = navController)
+        composable("passwordDetail/{passwordId}") { backStackEntry ->
+            val passwordId = backStackEntry.arguments?.getString("passwordId")
+            if (passwordId != null) {
+                PasswordDetailScreen(navController = navController, passwordId = passwordId)
+            }
         }
     }
 }
