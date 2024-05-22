@@ -1,14 +1,22 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     id("com.google.gms.google-services")
+    id ("com.google.secrets_gradle_plugin") version "0.4"
+
 }
 
 android {
+
+
     namespace = "com.example.slore"
     compileSdk = 34
 
+
     defaultConfig {
+
         applicationId = "com.example.slore"
         minSdk = 28
         targetSdk = 34
@@ -19,6 +27,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
     }
 
     buildTypes {
@@ -40,6 +49,7 @@ android {
     buildFeatures {
         compose = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
@@ -89,6 +99,11 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.6.7")
 
     implementation("com.google.firebase:firebase-firestore")
+
+// In Android Studio, add the following dependency to your build.gradle.kts file:
+    implementation("com.google.ai.client.generativeai:generativeai:0.6.0")
+
+
 
 
 
