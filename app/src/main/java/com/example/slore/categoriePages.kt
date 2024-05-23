@@ -64,6 +64,8 @@ import kotlinx.coroutines.tasks.await
  *  ***
  */
 
+/*the below code demonstrates that when on main screen i press on the big plus button the category pages or option comers are due to the below code*/
+
 
 
 @Composable

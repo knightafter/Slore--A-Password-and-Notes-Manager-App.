@@ -49,6 +49,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.TextFieldValue
 
 
+
+/*the below code demonstrates that when i click on the the below card where there are images for the category and finite and etc when i click
+* on that pictures then then the data is displayed to me from the firebase database the below code demonstrates that functionality*/
 @Composable
 fun OpenCategoryScreen(navController: NavHostController) {
     Column(modifier = Modifier
