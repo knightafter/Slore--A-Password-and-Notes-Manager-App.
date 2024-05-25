@@ -1,9 +1,8 @@
 package com.example.slore
 
-import EmailEntry
-import MakeYourOwnEntry
-import Note
-import PasswordEntry
+
+import android.util.Log
+import androidx.annotation.NonNull
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -37,6 +36,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -68,28 +69,72 @@ import kotlinx.coroutines.tasks.await
 
 
 
+
+
+data class ThoughtEntry(
+    val heading: String = "",
+    val thought: String = "",
+    val message: String = ""
+)
+
+// Functions to Add Data to Firestore
+fun addPasswordEntry(@NonNull userId: String, passwordEntry: PasswordEntry) {
+    val firestore = FirebaseFirestore.getInstance()
+    firestore.collection("users").document(userId).collection("passwords")
+        .add(passwordEntry)
+        .addOnSuccessListener {
+            Log.d("Firestore", "Password entry added successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("Firestore", "Error adding password entry", e)
+        }
+}
+
+fun addEmailEntry(@NonNull userId: String, emailEntry: EmailEntry) {
+    val firestore = FirebaseFirestore.getInstance()
+    firestore.collection("users").document(userId).collection("emails")
+        .add(emailEntry)
+        .addOnSuccessListener {
+            Log.d("Firestore", "Email entry added successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("Firestore", "Error adding email entry", e)
+        }
+}
+
+fun addThoughtEntry(@NonNull userId: String, thoughtEntry: ThoughtEntry) {
+    val firestore = FirebaseFirestore.getInstance()
+    firestore.collection("users").document(userId).collection("thoughts")
+        .add(thoughtEntry)
+        .addOnSuccessListener {
+            Log.d("Firestore", "Thought entry added successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("Firestore", "Error adding thought entry", e)
+        }
+}
+
 @Composable
 fun CenteredPopupMessage(message: String, onDismiss: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.3f), shape = RoundedCornerShape(8.dp)),
+            .background(Color.Black.copy(alpha = 0.3f)),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = message,
-            color = Color.White,
+        Box(
             modifier = Modifier
                 .background(Color.Gray, shape = RoundedCornerShape(8.dp))
                 .padding(16.dp)
-        )
+        ) {
+            Text(text = message, color = Color.White)
+        }
     }
     LaunchedEffect(Unit) {
         delay(1000L) // Show message for 1 second
         onDismiss()
     }
 }
-
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +146,7 @@ fun PasswordScreen(navController: NavHostController) {
     var message by remember { mutableStateOf(TextFieldValue("")) } // New field
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
+    val user: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     val scrollState = rememberScrollState()
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
@@ -124,7 +169,6 @@ fun PasswordScreen(navController: NavHostController) {
                 ) {
                     IconButton(
                         onClick = {
-                            val firestore = FirebaseFirestore.getInstance()
                             val passwordEntry = PasswordEntry(
                                 heading = headerText.text,
                                 username = username.text,
@@ -133,23 +177,16 @@ fun PasswordScreen(navController: NavHostController) {
                                 message = message.text // Save the message
                             )
 
-                            firestore.collection("passwords") // or "emails", or inputText for MakeYourOwnScreen
-                                .add(passwordEntry) // or emailEntry, or makeYourOwnEntry
-                                .addOnSuccessListener { documentReference ->
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                        navController.navigate("main") {
-                                            popUpTo("password") { inclusive = true } // or "Emails", or "makeYourOwn/{inputText}"
-                                        }
+                            user?.let {
+                                addPasswordEntry(it.uid, passwordEntry)
+                                scope.launch {
+                                    showPopupMessage = true
+                                    delay(1000L) // Show message for 1 second
+                                    navController.navigate("main") {
+                                        popUpTo("password") { inclusive = true } // or "Emails", or "makeYourOwn/{inputText}"
                                     }
                                 }
-                                .addOnFailureListener { e ->
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                    }
-                                }
+                            }
                         }
                     ) {
                         Icon(
@@ -277,11 +314,6 @@ fun PasswordScreen(navController: NavHostController) {
                             .fillMaxSize()
                             .onGloballyPositioned { coordinates ->
                                 textFieldHeight = coordinates.size.height
-                                if (textFieldHeight > screenHeightPx - 100) {
-                                    scope.launch {
-                                        scrollState.animateScrollTo(scrollState.maxValue)
-                                    }
-                                }
                             }
                     )
                 }
@@ -298,16 +330,17 @@ fun PasswordScreen(navController: NavHostController) {
 
 
 
-
+// EmailsScreen Composable
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun EmailsScreen(navController: NavHostController) {
-    var heading by remember { mutableStateOf(TextFieldValue("")) }
+    var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var message by remember { mutableStateOf(TextFieldValue("")) } // New field
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val user = FirebaseAuth.getInstance().currentUser
 
     val scrollState = rememberScrollState()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -331,166 +364,23 @@ fun EmailsScreen(navController: NavHostController) {
                 ) {
                     IconButton(
                         onClick = {
-                            val firestore = FirebaseFirestore.getInstance()
                             val emailEntry = EmailEntry(
-                                heading = heading.text,
+                                heading = headerText.text,
                                 username = username.text,
                                 password = password.text,
-                                message = message.text
-                            )
-                            scope.launch {
-                                firestore.collection("emails").add(emailEntry).await()
-                                showPopupMessage = true
-                            }
-                        }
-                    ) {
-                        Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080)) // Navy blue color
-                    }
-                }
-
-                // Heading field
-                TextField(
-                    value = heading,
-                    onValueChange = { heading = it },
-                    placeholder = { Text(text = "Heading...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                // Username field
-                TextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    placeholder = { Text(text = "Username...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                // Password field
-                TextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    placeholder = { Text(text = "Password...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                // Message field
-                TextField(
-                    value = message,
-                    onValueChange = { message = it },
-                    placeholder = { Text(text = "Message...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                    singleLine = false, // Make it multiline
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                // Show popup message when the data is saved
-                if (showPopupMessage) {
-                    AlertDialog(
-                        onDismissRequest = { showPopupMessage = false },
-                        title = { Text("Save Successful") },
-                        text = { Text("Your email has been saved successfully.") },
-                        confirmButton = {
-                            Button(onClick = { showPopupMessage = false }) {
-                                Text("OK")
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun ThoughtsScreen(navController: NavController) {
-    var headerText by remember { mutableStateOf(TextFieldValue("")) }
-    var contentText by remember { mutableStateOf(TextFieldValue("")) }
-    val maxWords = 6000
-    val scope = rememberCoroutineScope()
-
-    val scrollState = rememberScrollState()
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    var showPopupMessage by remember { mutableStateOf(false) }
-
-    MaterialTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF7E8C2))
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                // Save button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(
-                        onClick = {
-                            val firestore = FirebaseFirestore.getInstance()
-                            val note = Note(
-                                heading = headerText.text,
-                                content = contentText.text
+                                message = message.text // Save the message
                             )
 
-                            firestore.collection("Thoughts")
-                                .add(note)
-                                .addOnSuccessListener { documentReference ->
-                                    // Show success message
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                        // Navigate back to the main page
-                                        navController.navigate("main") {
-                                            popUpTo("password") { inclusive = true }
-                                        }
+                            user?.let {
+                                addEmailEntry(it.uid, emailEntry)
+                                scope.launch {
+                                    showPopupMessage = true
+                                    delay(1000L) // Show message for 1 second
+                                    navController.navigate("main") {
+                                        popUpTo("emails") { inclusive = true }
                                     }
                                 }
-                                .addOnFailureListener { e ->
-                                    // Show failure message
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                    }
-                                }
+                            }
                         }
                     ) {
                         Icon(
@@ -502,7 +392,7 @@ fun ThoughtsScreen(navController: NavController) {
                 }
 
                 Text(
-                    text = "Save Your Thoughts",
+                    text = "Create an Email Entry",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -530,143 +420,50 @@ fun ThoughtsScreen(navController: NavController) {
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-                val context = LocalContext.current
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(16.dp)
-                        .background(Color(0xFFF7E8C2))
-                ) {
-                    var textFieldHeight by remember { mutableStateOf(0) }
-
-                    BasicTextField(
-                        value = contentText,
-                        onValueChange = {
-                            if (it.text.split("\\s+".toRegex()).size <= maxWords) {
-                                contentText = it
-                            } else {
-                                scope.launch {
-                                    // Show some warning to the user if needed
-                                }
-                            }
-                        },
-                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Default
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { keyboardController?.hide() }
-                        ),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onGloballyPositioned { coordinates ->
-                                textFieldHeight = coordinates.size.height
-                            }
-                    )
-
-                    LaunchedEffect(textFieldHeight, contentText.text) {
-                        val screenHeightPx = context.resources.displayMetrics.heightPixels
-                        if (textFieldHeight > screenHeightPx - 100) {
-                            scrollState.animateScrollTo(scrollState.maxValue)
-                        }
-                    }
-                }
-            }
-
-            if (showPopupMessage) {
-                CenteredPopupMessage(message = "Your input is saved.") {
-                    showPopupMessage = false
-                }
-            }
-        }
-    }
-}
-
-
-
-
-
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun MakeYourOwnScreen(inputText: String?, navController: NavController) {
-    var heading by remember { mutableStateOf(TextFieldValue("")) }
-    var content by remember { mutableStateOf(TextFieldValue("")) }
-    var showPopupMessage by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    val scrollState = rememberScrollState()
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val context = LocalContext.current
-
-    MaterialTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF7E8C2))
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                // Save button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(
-                        onClick = {
-                            val firestore = FirebaseFirestore.getInstance()
-                            val makeYourOwnEntry = MakeYourOwnEntry(
-                                heading = heading.text,
-                                content = content.text
-                            )
-
-                            firestore.collection(inputText ?: "default")
-                                .add(makeYourOwnEntry)
-                                .addOnSuccessListener { documentReference ->
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                    }
-                                }
-                                .addOnFailureListener { e ->
-                                    scope.launch {
-                                        showPopupMessage = true
-                                        delay(1000L) // Show message for 1 second
-                                    }
-                                }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Save",
-                            tint = Color(0xFF000080) // Navy blue color
-                        )
-                    }
-                }
-
-                Text(
-                    text = inputText ?: "No input provided",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
+                TextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    placeholder = { Text(text = "Username...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 50.dp),
-                    textAlign = TextAlign.Center
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextField(
-                    value = heading,
-                    onValueChange = { heading = it },
-                    placeholder = { Text(text = "Heading...") },
+                    value = password,
+                    onValueChange = { password = it },
+                    placeholder = { Text(text = "Password...") },
                     textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
                     singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // New message field
+                TextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    placeholder = { Text(text = "Message...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = false, // Make it multiline
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
@@ -696,10 +493,8 @@ fun MakeYourOwnScreen(inputText: String?, navController: NavController) {
                     }
 
                     BasicTextField(
-                        value = content,
-                        onValueChange = {
-                            content = it
-                        },
+                        value = TextFieldValue("Memorable Notes..."), // Replace with actual value if needed
+                        onValueChange = { /* Handle change */ },
                         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Default
@@ -711,22 +506,187 @@ fun MakeYourOwnScreen(inputText: String?, navController: NavController) {
                             .fillMaxSize()
                             .onGloballyPositioned { coordinates ->
                                 textFieldHeight = coordinates.size.height
-                                if (textFieldHeight > screenHeightPx - 100) {
-                                    scope.launch {
-                                        scrollState.animateScrollTo(scrollState.maxValue)
-                                    }
-                                }
                             }
                     )
                 }
-            }
 
-            if (showPopupMessage) {
-                CenteredPopupMessage(message = "Your input is saved.") {
-                    showPopupMessage = false
+                if (showPopupMessage) {
+                    CenteredPopupMessage(message = "Your input is saved.") {
+                        showPopupMessage = false
+                    }
                 }
             }
         }
     }
 }
 
+
+// ThoughtsScreen Composable
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun ThoughtsScreen(navController: NavHostController) {
+    var headerText by remember { mutableStateOf(TextFieldValue("")) }
+    var thought by remember { mutableStateOf(TextFieldValue("")) }
+    var message by remember { mutableStateOf(TextFieldValue("")) } // New field
+    var showPopupMessage by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val user = FirebaseAuth.getInstance().currentUser
+
+    val scrollState = rememberScrollState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+
+    MaterialTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF7E8C2))
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                // Save button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(
+                        onClick = {
+                            val thoughtEntry = ThoughtEntry(
+                                heading = headerText.text,
+                                thought = thought.text,
+                                message = message.text // Save the message
+                            )
+
+                            user?.let {
+                                addThoughtEntry(it.uid, thoughtEntry)
+                                scope.launch {
+                                    showPopupMessage = true
+                                    delay(1000L) // Show message for 1 second
+                                    navController.navigate("main") {
+                                        popUpTo("thoughts") { inclusive = true }
+                                    }
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = "Save",
+                            tint = Color(0xFF000080) // Navy blue color
+                        )
+                    }
+                }
+
+                Text(
+                    text = "Create a Thought Entry",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 50.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = headerText,
+                    onValueChange = { headerText = it },
+                    placeholder = { Text(text = "Heading...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = thought,
+                    onValueChange = { thought = it },
+                    placeholder = { Text(text = "Thought...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = false, // Make it multiline
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // New message field
+                TextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    placeholder = { Text(text = "Message...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    singleLine = false, // Make it multiline
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(16.dp)
+                        .background(Color(0xFFF7E8C2))
+                ) {
+                    var textFieldHeight by remember { mutableStateOf(0) }
+                    var screenHeightPx by remember { mutableStateOf(0) }
+
+                    DisposableEffect(context) {
+                        val displayMetrics = context.resources.displayMetrics
+                        screenHeightPx = displayMetrics.heightPixels
+                        onDispose { }
+                    }
+
+                    BasicTextField(
+                        value = TextFieldValue("Memorable Notes..."), // Replace with actual value if needed
+                        onValueChange = { /* Handle change */ },
+                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Default
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .onGloballyPositioned { coordinates ->
+                                textFieldHeight = coordinates.size.height
+                            }
+                    )
+                }
+
+                if (showPopupMessage) {
+                    CenteredPopupMessage(message = "Your input is saved.") {
+                        showPopupMessage = false
+                    }
+                }
+            }
+        }
+    }
+}
