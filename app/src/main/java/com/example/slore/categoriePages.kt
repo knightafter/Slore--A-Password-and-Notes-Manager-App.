@@ -689,4 +689,11 @@ fun ThoughtsScreen(navController: NavHostController) {
             }
         }
     }
-}
+
+
+
+    @Composable
+    fun main(){
+        Text(text = "just trying the things out for testing")
+
+    }
