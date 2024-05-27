@@ -36,11 +36,14 @@ fun MainContent(navController: NavHostController) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+
+
             // Profile icon in the top-right corner
             Box(
                 modifier = Modifier
@@ -48,10 +51,18 @@ fun MainContent(navController: NavHostController) {
                     .padding(16.dp),
                 contentAlignment = Alignment.TopEnd
             ) {
+
+                Image( painter = painterResource(id = R.drawable.artboard_6), contentDescription = "Brand text",
+                    modifier = Modifier
+                        .height(400.dp) // Increase the height to make the image larger
+                        .width(400.dp)
+                        .offset(x = -40.dp ,y = (-40).dp)
+                )
+
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile Icon",
-                    modifier = Modifier
+                    modifier = Modifier.offset(y = 50.dp)
                         .size(32.dp)
                         .clickable { navController.navigate("home") }
                 )
@@ -59,11 +70,11 @@ fun MainContent(navController: NavHostController) {
 
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF000080), // Navy blue color
+                    containerColor = Color(0xFF103A5E), // Navy blue color
                 ),
                 modifier = Modifier
                     .size(width = 120.dp, height = 130.dp)
-                    .offset(y = 35.dp)
+                    .offset(y = -75.dp)
                     .padding(bottom = 16.dp)
                     .clickable { showCategoryDialog.value = true } // Show category dialog when card is clicked
             ) {
@@ -85,7 +96,8 @@ fun MainContent(navController: NavHostController) {
                     defaultElevation = 6.dp
                 ),
                 modifier = Modifier
-                    .size(width = 310.dp, height = 100.dp).offset(x= 0.dp , y = 100.dp)
+                    .size(width = 310.dp, height = 100.dp)
+                    .offset(x = 0.dp, y = -100.dp)
             ) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -127,10 +139,10 @@ fun MainContent(navController: NavHostController) {
 
             Text(
                 text = "Open Your Thoughts!",
-                modifier = Modifier.offset(y = 90.dp),
+                modifier = Modifier.offset(y = -110.dp),
                 fontStyle = FontStyle.Italic
             )
-            Text(text = "its me")
+
         }
 
         // Home icon placed outside the card
