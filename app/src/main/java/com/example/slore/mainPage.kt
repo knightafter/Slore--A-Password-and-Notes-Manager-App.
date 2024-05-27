@@ -130,6 +130,7 @@ fun MainContent(navController: NavHostController) {
                 modifier = Modifier.offset(y = 90.dp),
                 fontStyle = FontStyle.Italic
             )
+            Text(text = "its me")
         }
 
         // Home icon placed outside the card

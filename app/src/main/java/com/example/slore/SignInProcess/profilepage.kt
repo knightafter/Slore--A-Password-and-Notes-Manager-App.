@@ -151,9 +151,12 @@ fun HomeScreen(navController: NavController) {
                         }
                     ) {
                         Text("OK")
+
                     }
                 }
             )
         }
     }
 }
+
+

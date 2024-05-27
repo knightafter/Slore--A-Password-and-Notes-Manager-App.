@@ -1,5 +1,6 @@
 package com.example.slore
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,6 +20,8 @@ fun NavGraph() {
         navController = navController,
         startDestination = if (auth.currentUser != null) "main" else "login"
     ) {
+
+
         composable("login") { LoginScreen(navController = navController) }
         composable("signup") { SignUpScreen(navController = navController) }
         composable("main") { MainContent(navController = navController) }
