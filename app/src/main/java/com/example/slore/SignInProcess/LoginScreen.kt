@@ -14,15 +14,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.ui.text.input.VisualTransformation
-
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -30,9 +31,7 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val auth = FirebaseAuth.getInstance()
-    //to show the password in the field (below declaration is used)
     var passwordVisible by remember { mutableStateOf(false) }
-
 
     Column(
         modifier = Modifier
@@ -48,7 +47,6 @@ fun LoginScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        //calling the email input field//
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -74,7 +72,6 @@ fun LoginScreen(navController: NavController) {
             }
         )
 
-
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
@@ -87,7 +84,6 @@ fun LoginScreen(navController: NavController) {
             }
         )
 
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
@@ -96,7 +92,15 @@ fun LoginScreen(navController: NavController) {
                     auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                                navController.navigate("main") // Navigate to the main content screen
+                                val user = auth.currentUser
+                                if (user != null) {
+                                    if (user.isEmailVerified) {
+                                        navController.navigate("main") // Navigate to the main content screen
+                                    } else {
+                                        errorMessage = "Please verify your email first"
+                                        auth.signOut()
+                                    }
+                                }
                             } else {
                                 errorMessage = task.exception?.message
                             }
@@ -109,6 +113,10 @@ fun LoginScreen(navController: NavController) {
         ) {
             Text("Login")
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(text = "OR", style = TextStyle(fontStyle = FontStyle.Italic, color = Color.Gray))
 
         Spacer(modifier = Modifier.height(8.dp))
 

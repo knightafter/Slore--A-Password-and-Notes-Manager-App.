@@ -89,6 +89,7 @@ fun SignUpScreen(navController: NavController) {
                                 val user = auth.currentUser
                                 if (user != null) {
                                     sendVerificationEmail(user)
+                                    auth.signOut()  // Sign out the user after sending the verification email
                                 }
                             } else {
                                 errorMessage = task.exception?.message
