@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,6 +80,13 @@ data class ThoughtEntry(
     val message: String = ""
 )
 
+data class NoteEntry(
+    val heading: String = "",
+    val note: String = "",
+    val message: String = ""
+)
+
+
 // Functions to Add Data to Firestore
 fun addPasswordEntry(@NonNull userId: String, passwordEntry: PasswordEntry) {
     val firestore = FirebaseFirestore.getInstance()
@@ -115,6 +123,19 @@ fun addThoughtEntry(@NonNull userId: String, thoughtEntry: ThoughtEntry) {
             Log.e("Firestore", "Error adding thought entry", e)
         }
 }
+
+fun addNoteEntry(@NonNull userId: String, noteEntry: NoteEntry) {
+    val firestore = FirebaseFirestore.getInstance()
+    firestore.collection("users").document(userId).collection("notes")
+        .add(noteEntry)
+        .addOnSuccessListener {
+            Log.d("Firestore", "Note entry added successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("Firestore", "Error adding note entry", e)
+        }
+}
+
 
 @Composable
 fun CenteredPopupMessage(message: String, onDismiss: () -> Unit) {
@@ -157,19 +178,27 @@ fun PasswordScreen(navController: NavHostController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF7E8C2))
+                .background(Color(0xFFF5F5F5)) // Changed to a neutral background color
                 .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                // Save button
+                // Top bar with back arrow and save button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .clickable { navController.popBackStack() }
+                            .padding(16.dp).size(35.dp).offset(x = (-27).dp)
+                    )
+                    TextButton(
                         onClick = {
                             val passwordEntry = PasswordEntry(
                                 heading = headerText.text,
@@ -191,10 +220,11 @@ fun PasswordScreen(navController: NavHostController) {
                             }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Save",
-                            tint = Color(0xFF000080) // Navy blue color
+                        Text(
+                            text = "Save",
+                            color = Color(0xFF000080), // Navy blue color
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -215,7 +245,7 @@ fun PasswordScreen(navController: NavHostController) {
                     value = headerText,
                     onValueChange = { headerText = it },
                     placeholder = { Text(text = "Heading...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -233,7 +263,7 @@ fun PasswordScreen(navController: NavHostController) {
                     value = username,
                     onValueChange = { username = it },
                     placeholder = { Text(text = "Username...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -251,7 +281,7 @@ fun PasswordScreen(navController: NavHostController) {
                     value = password,
                     onValueChange = { password = it },
                     placeholder = { Text(text = "Password...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -270,7 +300,7 @@ fun PasswordScreen(navController: NavHostController) {
                     value = message,
                     onValueChange = { message = it },
                     placeholder = { Text(text = "Message...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
                     singleLine = false, // Make it multiline
                     modifier = Modifier
                         .fillMaxWidth()
@@ -289,7 +319,7 @@ fun PasswordScreen(navController: NavHostController) {
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                         .padding(16.dp)
-                        .background(Color(0xFFF7E8C2))
+                        .background(Color(0xFFF5F5F5)) // Changed to a neutral background color
                 ) {
                     var textFieldHeight by remember { mutableStateOf(0) }
                     var screenHeightPx by remember { mutableStateOf(0) }
@@ -305,7 +335,7 @@ fun PasswordScreen(navController: NavHostController) {
                         onValueChange = {
                             memorableNotes = it
                         },
-                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black), // Changed text color to black
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Default
                         ),
@@ -332,14 +362,13 @@ fun PasswordScreen(navController: NavHostController) {
 
 
 
-// EmailsScreen Composable
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun EmailsScreen(navController: NavHostController) {
     var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
-    var message by remember { mutableStateOf(TextFieldValue("")) } // New field
+    var message by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
@@ -352,25 +381,35 @@ fun EmailsScreen(navController: NavHostController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF7E8C2))
+                .background(Color(0xFFF5F5F5))
                 .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                // Save button
+                // Top bar with back arrow and save button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .clickable { navController.popBackStack() }
+                            .padding(16.dp)
+                            .size(35.dp)
+                            .offset(x = (-27).dp)
+                    )
+                    TextButton(
                         onClick = {
                             val emailEntry = EmailEntry(
                                 heading = headerText.text,
                                 username = username.text,
                                 password = password.text,
-                                message = message.text // Save the message
+                                message = message.text
                             )
 
                             user?.let {
@@ -385,10 +424,11 @@ fun EmailsScreen(navController: NavHostController) {
                             }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Save",
-                            tint = Color(0xFF000080) // Navy blue color
+                        Text(
+                            text = "Save",
+                            color = Color(0xFF000080),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -409,7 +449,7 @@ fun EmailsScreen(navController: NavHostController) {
                     value = headerText,
                     onValueChange = { headerText = it },
                     placeholder = { Text(text = "Heading...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -427,7 +467,7 @@ fun EmailsScreen(navController: NavHostController) {
                     value = username,
                     onValueChange = { username = it },
                     placeholder = { Text(text = "Username...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -445,7 +485,7 @@ fun EmailsScreen(navController: NavHostController) {
                     value = password,
                     onValueChange = { password = it },
                     placeholder = { Text(text = "Password...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -464,7 +504,7 @@ fun EmailsScreen(navController: NavHostController) {
                     value = message,
                     onValueChange = { message = it },
                     placeholder = { Text(text = "Message...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = false, // Make it multiline
                     modifier = Modifier
                         .fillMaxWidth()
@@ -483,7 +523,7 @@ fun EmailsScreen(navController: NavHostController) {
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                         .padding(16.dp)
-                        .background(Color(0xFFF7E8C2))
+                        .background(Color(0xFFF5F5F5))
                 ) {
                     var textFieldHeight by remember { mutableStateOf(0) }
                     var screenHeightPx by remember { mutableStateOf(0) }
@@ -511,11 +551,11 @@ fun EmailsScreen(navController: NavHostController) {
                             }
                     )
                 }
+            }
 
-                if (showPopupMessage) {
-                    CenteredPopupMessage(message = "Your input is saved.") {
-                        showPopupMessage = false
-                    }
+            if (showPopupMessage) {
+                CenteredPopupMessage(message = "Your input is saved.") {
+                    showPopupMessage = false
                 }
             }
         }
@@ -529,7 +569,7 @@ fun EmailsScreen(navController: NavHostController) {
 fun ThoughtsScreen(navController: NavHostController) {
     var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var thought by remember { mutableStateOf(TextFieldValue("")) }
-    var message by remember { mutableStateOf(TextFieldValue("")) } // New field
+    var message by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
@@ -542,24 +582,34 @@ fun ThoughtsScreen(navController: NavHostController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF7E8C2))
+                .background(Color(0xFFF5F5F5))
                 .padding(16.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                // Save button
+                // Top bar with back arrow and save button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .clickable { navController.popBackStack() }
+                            .padding(16.dp)
+                            .size(35.dp)
+                            .offset(x = (-27).dp)
+                    )
+                    TextButton(
                         onClick = {
                             val thoughtEntry = ThoughtEntry(
                                 heading = headerText.text,
                                 thought = thought.text,
-                                message = message.text // Save the message
+                                message = message.text
                             )
 
                             user?.let {
@@ -574,10 +624,11 @@ fun ThoughtsScreen(navController: NavHostController) {
                             }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Save",
-                            tint = Color(0xFF000080) // Navy blue color
+                        Text(
+                            text = "Save",
+                            color = Color(0xFF000080),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -598,7 +649,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                     value = headerText,
                     onValueChange = { headerText = it },
                     placeholder = { Text(text = "Heading...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -615,8 +666,9 @@ fun ThoughtsScreen(navController: NavHostController) {
                 TextField(
                     value = thought,
                     onValueChange = { thought = it },
-                    placeholder = { Text(text = "Thought...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    placeholder =
+                    { Text(text = "Thought...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = false, // Make it multiline
                     modifier = Modifier
                         .fillMaxWidth()
@@ -635,7 +687,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                     value = message,
                     onValueChange = { message = it },
                     placeholder = { Text(text = "Message...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     singleLine = false, // Make it multiline
                     modifier = Modifier
                         .fillMaxWidth()
@@ -654,7 +706,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                         .padding(16.dp)
-                        .background(Color(0xFFF7E8C2))
+                        .background(Color(0xFFF5F5F5))
                 ) {
                     var textFieldHeight by remember { mutableStateOf(0) }
                     var screenHeightPx by remember { mutableStateOf(0) }
@@ -666,7 +718,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                     }
 
                     BasicTextField(
-                        value = TextFieldValue("Memorable Notes..."), // Replace with actual value if needed
+                        value = TextFieldValue("Notes..."), // Replace with actual value if needed
                         onValueChange = { /* Handle change */ },
                         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -682,45 +734,194 @@ fun ThoughtsScreen(navController: NavHostController) {
                             }
                     )
                 }
+            }
 
-                if (showPopupMessage) {
-                    CenteredPopupMessage(message = "Your input is saved.") {
-                        showPopupMessage = false
-                    }
+            if (showPopupMessage) {
+                CenteredPopupMessage(message = "Your input is saved.") {
+                    showPopupMessage = false
                 }
             }
         }
     }
-
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun NotesScreen(navController: NavHostController) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Notes") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        content = { padding ->
+    var headerText by remember { mutableStateOf(TextFieldValue("")) }
+    var note by remember { mutableStateOf(TextFieldValue("")) }
+    var message by remember { mutableStateOf(TextFieldValue("")) }
+    var showPopupMessage by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val user = FirebaseAuth.getInstance().currentUser
+
+    val scrollState = rememberScrollState()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+
+    MaterialTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F5)) // Neutral background color
+                .padding(16.dp)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "This is the Notes screen.")
-                // Add more content here as needed
+                // Top bar with back arrow and save button
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier
+                            .clickable { navController.popBackStack() }
+                            .padding(16.dp)
+                            .size(35.dp)
+                            .offset(x = (-27).dp)
+                    )
+                    TextButton(
+                        onClick = {
+                            val noteEntry = NoteEntry(
+                                heading = headerText.text,
+                                note = note.text,
+                                message = message.text
+                            )
+
+                            user?.let {
+                                addNoteEntry(it.uid, noteEntry)
+                                scope.launch {
+                                    showPopupMessage = true
+                                    delay(1000L) // Show message for 1 second
+                                    navController.navigate("main") {
+                                        popUpTo("notes") { inclusive = true }
+                                    }
+                                }
+                            }
+                        }
+                    ) {
+                        Text(
+                            text = "Save",
+                            color = Color(0xFF000080), // Navy blue color
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Text(
+                    text = "Create a Note",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 50.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = headerText,
+                    onValueChange = { headerText = it },
+                    placeholder = { Text(text = "Heading...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    placeholder = { Text(text = "Note...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
+                    singleLine = false, // Make it multiline
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // New message field
+                TextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    placeholder = { Text(text = "Message...") },
+                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
+                    singleLine = false, // Make it multiline
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        cursorColor = Color.Black,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState)
+                        .padding(16.dp)
+                        .background(Color(0xFFF5F5F5)) // Neutral background color
+                ) {
+                    var textFieldHeight by remember { mutableStateOf(0) }
+                    var screenHeightPx by remember { mutableStateOf(0) }
+
+                    DisposableEffect(context) {
+                        val displayMetrics = context.resources.displayMetrics
+                        screenHeightPx = displayMetrics.heightPixels
+                        onDispose { }
+                    }
+
+                    BasicTextField(
+                        value = TextFieldValue("Memorable Notes..."), // Replace with actual value if needed
+                        onValueChange = { /* Handle change */ },
+                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black), // Changed text color to black
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Default
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboardController?.hide() }
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .onGloballyPositioned { coordinates ->
+                                textFieldHeight = coordinates.size.height
+                            }
+                    )
+                }
+            }
+
+            if (showPopupMessage) {
+                CenteredPopupMessage(message = "Your input is saved.") {
+                    showPopupMessage = false
+                }
             }
         }
-    )
+    }
 }
-
-
