@@ -1,6 +1,7 @@
 package com.example.slore
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,7 +22,12 @@ import androidx.navigation.NavHostController
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Note
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.painterResource
 import kotlinx.coroutines.delay
@@ -59,8 +65,7 @@ fun MainContent(navController: NavHostController) {
                         .offset(x = -40.dp ,y = (-40).dp)
                 )
 
-                Icon(
-                    imageVector = Icons.Default.Person,
+                Icon(                    imageVector = Icons.Default.Person,
                     contentDescription = "Profile Icon",
                     modifier = Modifier.offset(y = 50.dp)
                         .size(32.dp)
@@ -152,63 +157,18 @@ fun MainContent(navController: NavHostController) {
                 .padding(16.dp),
             contentAlignment = Alignment.BottomCenter // Centering the Home icon
         ) {
-            Icon(
-                imageVector = Icons.Default.Home,
-                contentDescription = "Home Icon",
+            Image(
+                painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
+                contentDescription = "Home Image",
                 modifier = Modifier
-                    .size(64.dp) // Increase the size of the home icon
-                    .clickable { showGeminiDialog.value = true } // Show Gemini dialog when home icon is clicked
+                    .size(90.dp) // Increase the size of the image
+                    .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
             )
         }
 
         // Show category dialog when showCategoryDialog is true
         if (showCategoryDialog.value) {
-            AlertDialog(
-                onDismissRequest = { showCategoryDialog.value = false },
-                title = { Text(text = "Select a category") },
-                text = {
-                    LazyColumn {
-                        items(listOf("Passwords", "Emails", "Thoughts")) { category ->
-                            Text(
-                                text = category,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        when (category) {
-                                            "Passwords" -> navController.navigate("password")
-                                            "Thoughts" -> navController.navigate("thoughts")
-                                            "Emails" -> navController.navigate("Emails")
-                                        }
-                                        showCategoryDialog.value = false
-                                    }
-                                    .padding(16.dp)
-                            )
-                        }
-                        item {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                OutlinedTextField(
-                                    value = text,
-                                    onValueChange = { newText -> text = newText },
-                                    label = { Text("Make Your Own") },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(16.dp)
-                                )
-                                IconButton(onClick = {
-                                    navController.navigate("makeYourOwn/${text}")
-                                }, modifier = Modifier.padding(16.dp)) {
-                                    Icon(Icons.Default.ArrowForward, contentDescription = "Go to Make Your Own Screen")
-                                }
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showCategoryDialog.value = false }) {
-                        Text("OK")
-                    }
-                }
-            )
+            CategoryDialog(navController = navController, showDialog = showCategoryDialog)
         }
 
         // Show Gemini dialog when showGeminiDialog is true
@@ -216,6 +176,74 @@ fun MainContent(navController: NavHostController) {
             GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
         }
     }
+}
+
+
+@Composable
+fun CategoryDialog(navController: NavHostController, showDialog: MutableState<Boolean>) {
+    val categories = listOf(
+        Pair("Thoughts", Icons.Default.Star),
+        Pair("Notes", Icons.Default.Note),
+        Pair("Passwords", Icons.Default.Lock),
+        Pair("Emails", Icons.Default.Email)
+    )
+
+    AlertDialog(
+        onDismissRequest = { showDialog.value = false },
+        title = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF103A5E))
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Select a category",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        },
+        text = {
+            LazyColumn {
+                items(categories) { category ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                when (category.first) {
+                                    "Passwords" -> navController.navigate("password")
+                                    "Thoughts" -> navController.navigate("thoughts")
+                                    "Notes" -> navController.navigate("notes")
+                                    "Emails" -> navController.navigate("emails")
+                                }
+                                showDialog.value = false
+                            }
+                            .padding(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = category.second,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = category.first,
+                            fontSize = 16.sp
+                        )
+                    }
+                    Divider()
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { showDialog.value = false }) {
+                Text("OK")
+            }
+        }
+    )
 }
 
 

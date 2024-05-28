@@ -20,21 +20,26 @@ fun NavGraph() {
         navController = navController,
         startDestination = if (auth.currentUser != null) "main" else "login"
     ) {
-
-
         composable("login") { LoginScreen(navController = navController) }
         composable("signup") { SignUpScreen(navController = navController) }
         composable("main") { MainContent(navController = navController) }
         composable("password") { PasswordScreen(navController = navController) }
         composable("thoughts") { ThoughtsScreen(navController = navController) }
+        composable("notes") { NotesScreen(navController = navController) }
         composable("Emails") { EmailsScreen(navController = navController) }
-
         composable("home") { HomeScreen(navController) }
         composable("forgotPassword") { ForgotPasswordScreen(navController = navController) }
         composable("openCategory") { OpenCategoryScreen(navController = navController) }
         composable("passwords") { PasswordsScreenCategory(navController = navController) }
         composable("emailsscreen") { EmailsEntryScreenCategory(navController = navController) }
         composable("hello") { ThoughtsScreenCategory(navController = navController) }
+
+        composable("noteDetail/{noteId}") { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("noteId")
+            if (noteId != null) {
+                ThoughtDetailScreen(navController = navController, thoughtId = noteId)
+            }
+        }
 
         composable("passwordDetail/{passwordId}") { backStackEntry ->
             val passwordId = backStackEntry.arguments?.getString("passwordId")
@@ -50,11 +55,5 @@ fun NavGraph() {
             }
         }
 
-        composable("noteDetail/{noteId}") { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getString("noteId")
-            if (noteId != null) {
-                ThoughtDetailScreen(navController = navController, thoughtId = noteId)
-            }
-        }
     }
 }
