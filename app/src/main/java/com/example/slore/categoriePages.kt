@@ -45,6 +45,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 /**
@@ -77,8 +80,10 @@ import kotlinx.coroutines.tasks.await
 data class ThoughtEntry(
     val heading: String = "",
     val thought: String = "",
-    val message: String = ""
+    val message: String = "",
+    val timestamp: Long = System.currentTimeMillis()
 )
+
 
 data class NoteEntry(
     val heading: String = "",
@@ -123,6 +128,7 @@ fun addThoughtEntry(@NonNull userId: String, thoughtEntry: ThoughtEntry) {
             Log.e("Firestore", "Error adding thought entry", e)
         }
 }
+
 
 fun addNoteEntry(@NonNull userId: String, noteEntry: NoteEntry) {
     val firestore = FirebaseFirestore.getInstance()
@@ -434,7 +440,7 @@ fun EmailsScreen(navController: NavHostController) {
                 }
 
                 Text(
-                    text = "Create an Email Entry",
+                    text = "Create an Email",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -578,6 +584,10 @@ fun ThoughtsScreen(navController: NavHostController) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
 
+    val currentDateTime = remember {
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+    }
+
     MaterialTheme {
         Box(
             modifier = Modifier
@@ -589,14 +599,14 @@ fun ThoughtsScreen(navController: NavHostController) {
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                // Top bar with back arrow and save button
+                // Top bar with back arrow, date/time, and save button
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "Back",
                         modifier = Modifier
                             .clickable { navController.popBackStack() }
@@ -604,12 +614,20 @@ fun ThoughtsScreen(navController: NavHostController) {
                             .size(35.dp)
                             .offset(x = (-27).dp)
                     )
+                    Text(
+                        text = currentDateTime,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
                     TextButton(
                         onClick = {
                             val thoughtEntry = ThoughtEntry(
                                 heading = headerText.text,
                                 thought = thought.text,
-                                message = message.text
+                                message = message.text,
+                                timestamp = System.currentTimeMillis()
                             )
 
                             user?.let {
@@ -634,7 +652,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                 }
 
                 Text(
-                    text = "Create a Thought Entry",
+                    text = "Create a Thought",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -663,44 +681,6 @@ fun ThoughtsScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TextField(
-                    value = thought,
-                    onValueChange = { thought = it },
-                    placeholder =
-                    { Text(text = "Thought...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
-                    singleLine = false, // Make it multiline
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // New message field
-                TextField(
-                    value = message,
-                    onValueChange = { message = it },
-                    placeholder = { Text(text = "Message...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
-                    singleLine = false, // Make it multiline
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -708,18 +688,9 @@ fun ThoughtsScreen(navController: NavHostController) {
                         .padding(16.dp)
                         .background(Color(0xFFF5F5F5))
                 ) {
-                    var textFieldHeight by remember { mutableStateOf(0) }
-                    var screenHeightPx by remember { mutableStateOf(0) }
-
-                    DisposableEffect(context) {
-                        val displayMetrics = context.resources.displayMetrics
-                        screenHeightPx = displayMetrics.heightPixels
-                        onDispose { }
-                    }
-
                     BasicTextField(
-                        value = TextFieldValue("Notes..."), // Replace with actual value if needed
-                        onValueChange = { /* Handle change */ },
+                        value = thought,
+                        onValueChange = { thought = it },
                         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Default
@@ -730,8 +701,22 @@ fun ThoughtsScreen(navController: NavHostController) {
                         modifier = Modifier
                             .fillMaxSize()
                             .onGloballyPositioned { coordinates ->
-                                textFieldHeight = coordinates.size.height
+                                // capture the height of the BasicTextField
+                            },
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) {
+                                if (thought.text.isEmpty()) {
+                                    Text(
+                                        text = "Thoughts...",
+                                        style = TextStyle(fontSize = 16.sp, color = Color.Gray)
+                                    )
+                                }
+                                innerTextField() // This will place the actual BasicTextField
                             }
+                        }
                     )
                 }
             }
@@ -845,63 +830,31 @@ fun NotesScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TextField(
-                    value = note,
-                    onValueChange = { note = it },
-                    placeholder = { Text(text = "Note...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
-                    singleLine = false, // Make it multiline
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
+                val scrollState = rememberScrollState()
+                val context = LocalContext.current
+                val keyboardController = LocalSoftwareKeyboardController.current
 
-                Spacer(modifier = Modifier.height(16.dp))
+                var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
+                var textFieldHeight by remember { mutableStateOf(0) }
+                var screenHeightPx by remember { mutableStateOf(0) }
 
-                // New message field
-                TextField(
-                    value = message,
-                    onValueChange = { message = it },
-                    placeholder = { Text(text = "Message...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black), // Changed text color to black
-                    singleLine = false, // Make it multiline
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                DisposableEffect(context) {
+                    val displayMetrics = context.resources.displayMetrics
+                    screenHeightPx = displayMetrics.heightPixels
+                    onDispose { }
+                }
 
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                         .padding(16.dp)
-                        .background(Color(0xFFF5F5F5)) // Neutral background color
+                        .background(Color(0xFFF5F5F5))
                 ) {
-                    var textFieldHeight by remember { mutableStateOf(0) }
-                    var screenHeightPx by remember { mutableStateOf(0) }
-
-                    DisposableEffect(context) {
-                        val displayMetrics = context.resources.displayMetrics
-                        screenHeightPx = displayMetrics.heightPixels
-                        onDispose { }
-                    }
-
                     BasicTextField(
-                        value = TextFieldValue("Memorable Notes..."), // Replace with actual value if needed
-                        onValueChange = { /* Handle change */ },
-                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black), // Changed text color to black
+                        value = textFieldValue,
+                        onValueChange = { textFieldValue = it },
+                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Default
                         ),
@@ -912,7 +865,21 @@ fun NotesScreen(navController: NavHostController) {
                             .fillMaxSize()
                             .onGloballyPositioned { coordinates ->
                                 textFieldHeight = coordinates.size.height
+                            },
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) {
+                                if (textFieldValue.text.isEmpty()) {
+                                    Text(
+                                        text = "Notes...",
+                                        style = TextStyle(fontSize = 16.sp, color = Color.Gray)
+                                    )
+                                }
+                                innerTextField() // This will place the actual BasicTextField
                             }
+                        }
                     )
                 }
             }
