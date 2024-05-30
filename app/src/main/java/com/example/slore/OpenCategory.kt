@@ -12,15 +12,23 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -37,7 +45,8 @@ data class PasswordEntry(
     val username: String = "",
     val password: String = "",
     val memorableNotes: String = "",
-    val message: String = ""
+    val message: String = "",
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 data class EmailEntry(
@@ -45,40 +54,93 @@ data class EmailEntry(
     val heading: String = "",
     val username: String = "",
     val password: String = "",
-    val message: String = ""
+    val message: String = "",
+    val timestamp: Long = System.currentTimeMillis()
 )
 
-data class Note(
-    val id: String = "",
-    val heading: String = "",
-    val content: String = ""
-)
+/*when i click the below 2 composables then the category page is opened and i can see the categories which i have saved before
+* then when i click the each category then i can easily see the seperated data for the each category
+* */
 
 @Composable
 fun OpenCategoryScreen(navController: NavHostController) {
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-        BasicText(
+    val iconSize = 24.dp
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Categories",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            textAlign = TextAlign.Center
+        )
+
+        CategoryItem(
             text = "Passwords",
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .clickable { navController.navigate("passwords") }
+            icon = Icons.Default.VpnKey,
+            onClick = { navController.navigate("passwords") },
+            iconSize = iconSize
         )
-        BasicText(
+
+        Divider()
+
+        CategoryItem(
             text = "Email",
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .clickable { navController.navigate("emailsscreen") }
+            icon = Icons.Default.Email,
+            onClick = { navController.navigate("emailsscreen") },
+            iconSize = iconSize
         )
-        BasicText(
+
+        Divider()
+
+        CategoryItem(
             text = "Thoughts",
-            modifier = Modifier
-                .padding(vertical = 8.dp)
-                .clickable { navController.navigate("hello") }
+            icon = Icons.Default.Lightbulb,
+            onClick = { navController.navigate("hello") },
+            iconSize = iconSize
+        )
+
+        Divider()
+
+        CategoryItem(
+            text = "Notes",
+            icon = Icons.Default.Note,
+            onClick = { navController.navigate("notes1") },
+            iconSize = iconSize
         )
     }
 }
+
+@Composable
+fun CategoryItem(text: String, icon: ImageVector, onClick: () -> Unit, iconSize: Dp) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(iconSize),
+            tint = Color(0xFF000080)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
 
 @Composable
 fun PasswordsScreenCategory(navController: NavHostController) {
@@ -504,29 +566,28 @@ fun EmailDetailScreen(navController: NavHostController, emailId: String) {
 }
 
 @Composable
-fun ThoughtsScreenCategory(navController: NavHostController) {
-    var items by remember { mutableStateOf<List<Note>>(emptyList()) }
+fun ThoughtsEntryScreenCategory(navController: NavHostController) {
+    var items by remember { mutableStateOf<List<ThoughtEntry>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-
-            LaunchedEffect(Unit) {
-                try {
-                    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                    val firestore = FirebaseFirestore.getInstance()
-                    val snapshot = firestore.collection("users")
-                        .document(userId)
-                        .collection("thoughts")
-                        .get().await()
-                    val fetchedItems = snapshot.documents.mapNotNull {
-                        it.toObject<Note>()?.copy(id = it.id)
-                    }
-                    items = fetchedItems
-                    loading = false
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    loading = false
-                }
+    LaunchedEffect(Unit) {
+        try {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val firestore = FirebaseFirestore.getInstance()
+            val snapshot = firestore.collection("users")
+                .document(userId)
+                .collection("thoughts")
+                .get().await()
+            val fetchedItems = snapshot.documents.mapNotNull { document ->
+                document.toObject<ThoughtEntry>()?.copy(id = document.id)
             }
+            items = fetchedItems
+            loading = false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            loading = false
+        }
+    }
 
     if (loading) {
         CircularProgressIndicator(modifier = Modifier.padding(16.dp))
@@ -536,7 +597,7 @@ fun ThoughtsScreenCategory(navController: NavHostController) {
 }
 
 @Composable
-fun ThoughtItemList(navController: NavHostController, items: List<Note>) {
+fun ThoughtItemList(navController: NavHostController, items: List<ThoughtEntry>) {
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -560,31 +621,33 @@ fun ThoughtItemList(navController: NavHostController, items: List<Note>) {
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ThoughtDetailScreen(navController: NavHostController, thoughtId: String) {
     Log.d("ThoughtDetailScreen", "Thought ID: $thoughtId")
 
-
     var heading by remember { mutableStateOf(TextFieldValue("")) }
-    var content by remember { mutableStateOf(TextFieldValue("")) }
+    var thought by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(thoughtId) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         val firestore = FirebaseFirestore.getInstance()
-        val document = firestore.collection("users")
-            .document(userId)
-            .collection("thoughts")
-            .document(thoughtId)
-            .get().await()
-        val note = document.toObject<Note>()
-        if (note != null) {
-            heading = TextFieldValue(note.heading)
-            content = TextFieldValue(note.content)
+        try {
+            val document = firestore.collection("users")
+                .document(userId)
+                .collection("thoughts")
+                .document(thoughtId)
+                .get().await()
+            val thoughtEntry = document.toObject<ThoughtEntry>()
+            if (thoughtEntry != null) {
+                heading = TextFieldValue(thoughtEntry.heading)
+                thought = TextFieldValue(thoughtEntry.thought)
+            }
+        } catch (e: Exception) {
+            Log.e("ThoughtDetailScreen", "Error fetching thought details", e)
         }
     }
 
@@ -602,17 +665,21 @@ fun ThoughtDetailScreen(navController: NavHostController, thoughtId: String) {
                         scope.launch {
                             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
                             val firestore = FirebaseFirestore.getInstance()
-                            val updatedNote = Note(
+                            val updatedThoughtEntry = ThoughtEntry(
                                 id = thoughtId,
                                 heading = heading.text,
-                                content = content.text
+                                thought = thought.text
                             )
-                            firestore.collection("users")
-                                .document(userId)
-                                .collection("thoughts")
-                                .document(thoughtId)
-                                .set(updatedNote).await()
-                            showPopupMessage = true
+                            try {
+                                firestore.collection("users")
+                                    .document(userId)
+                                    .collection("thoughts")
+                                    .document(thoughtId)
+                                    .set(updatedThoughtEntry).await()
+                                showPopupMessage = true
+                            } catch (e: Exception) {
+                                Log.e("ThoughtDetailScreen", "Error updating thought", e)
+                            }
                         }
                     }) {
                         Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080))
@@ -648,8 +715,8 @@ fun ThoughtDetailScreen(navController: NavHostController, thoughtId: String) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     TextField(
-                        value = content,
-                        onValueChange = { content = it },
+                        value = thought,
+                        onValueChange = { thought = it },
                         placeholder = { Text(text = "Content...") },
                         textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
                         singleLine = false,
@@ -668,8 +735,194 @@ fun ThoughtDetailScreen(navController: NavHostController, thoughtId: String) {
                             confirmButton = {
                                 Button(onClick = {
                                     showPopupMessage = false
-                                    navController.navigate("hello") {
+                                    navController.navigate("thoughtsscreen") {
                                         popUpTo("thoughtDetail/$thoughtId") { inclusive = true }
+                                    }
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun NotesEntryScreenCategory(navController: NavHostController) {
+    var items by remember { mutableStateOf<List<NoteEntry>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        try {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val firestore = FirebaseFirestore.getInstance()
+            val snapshot = firestore.collection("users")
+                .document(userId)
+                .collection("notes")
+                .get().await()
+            val fetchedItems = snapshot.documents.mapNotNull { document ->
+                document.toObject<NoteEntry>()?.copy(id = document.id)
+            }
+            items = fetchedItems
+            loading = false
+        } catch (e: Exception) {
+            e.printStackTrace()
+            loading = false
+        }
+    }
+
+    if (loading) {
+        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+    } else {
+        NoteItemList(navController, items)
+    }
+}
+
+@Composable
+fun NoteItemList(navController: NavHostController, items: List<NoteEntry>) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        items.forEach { item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .clickable {
+                        navController.navigate("noteDetail/${item.id}")
+                    }
+            ) {
+                Text(
+                    text = item.heading,
+                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun NoteDetailScreen(navController: NavHostController, noteId: String) {
+    Log.d("NoteDetailScreen", "Note ID: $noteId")
+
+    var heading by remember { mutableStateOf(TextFieldValue("")) }
+    var note by remember { mutableStateOf(TextFieldValue("")) }
+    var showPopupMessage by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(noteId) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        val firestore = FirebaseFirestore.getInstance()
+        try {
+            val document = firestore.collection("users")
+                .document(userId)
+                .collection("notes")
+                .document(noteId)
+                .get().await()
+            val noteEntry = document.toObject<NoteEntry>()
+            if (noteEntry != null) {
+                heading = TextFieldValue(noteEntry.heading)
+                note = TextFieldValue(noteEntry.note)
+            }
+        } catch (e: Exception) {
+            Log.e("NoteDetailScreen", "Error fetching note details", e)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = "Edit Note") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                            val firestore = FirebaseFirestore.getInstance()
+                            val updatedNoteEntry = NoteEntry(
+                                id = noteId,
+                                heading = heading.text,
+                                note = note.text
+                            )
+                            try {
+                                firestore.collection("users")
+                                    .document(userId)
+                                    .collection("notes")
+                                    .document(noteId)
+                                    .set(updatedNoteEntry).await()
+                                showPopupMessage = true
+                            } catch (e: Exception) {
+                                Log.e("NoteDetailScreen", "Error updating note", e)
+                            }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Save, contentDescription = "Save", tint = Color(0xFF000080))
+                    }
+                }
+            )
+        },
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF7E8C2))
+                    .padding(16.dp)
+                    .pointerInput(Unit) {}
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 86.dp)
+                ) {
+                    Text(
+                        text = heading.text,
+                        style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.padding(8.dp)
+                    )
+
+                    TextField(
+                        value = heading,
+                        onValueChange = { heading = it },
+                        placeholder = { Text(text = "Heading...") },
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = note,
+                        onValueChange = { note = it },
+                        placeholder = { Text(text = "Content...") },
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        singleLine = false,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (showPopupMessage) {
+                        AlertDialog(
+                            onDismissRequest = { showPopupMessage = false },
+                            title = { Text("Update Successful") },
+                            text = { Text("Your note has been updated successfully.") },
+                            confirmButton = {
+                                Button(onClick = {
+                                    showPopupMessage = false
+                                    navController.navigate("notescreen") {
+                                        popUpTo("noteDetail/$noteId") { inclusive = true }
                                     }
                                 }) {
                                     Text("OK")

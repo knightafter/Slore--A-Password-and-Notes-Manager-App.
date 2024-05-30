@@ -1,6 +1,5 @@
 package com.example.slore
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,14 +29,15 @@ fun NavGraph() {
         composable("home") { HomeScreen(navController) }
         composable("forgotPassword") { ForgotPasswordScreen(navController = navController) }
         composable("openCategory") { OpenCategoryScreen(navController = navController) }
-        composable("passwords") { PasswordsScreenCategory(navController = navController) }
-        composable("emailsscreen") { EmailsEntryScreenCategory(navController = navController) }
-        composable("hello") { ThoughtsScreenCategory(navController = navController) }
+        composable("passwords") { PasswordsScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable
+        composable("emailsscreen") { EmailsEntryScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable
+        composable("hello") { ThoughtsEntryScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable
+        composable("notes1") { NotesEntryScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable
 
-        composable("noteDetail/{noteId}") { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getString("noteId")
-            if (noteId != null) {
-                ThoughtDetailScreen(navController = navController, thoughtId = noteId)
+        composable("thoughtDetail/{thoughtId}") { backStackEntry ->
+            val thoughtId = backStackEntry.arguments?.getString("thoughtId")
+            if (thoughtId != null) {
+                ThoughtDetailScreen(navController = navController, thoughtId = thoughtId)
             }
         }
 
@@ -52,6 +52,14 @@ fun NavGraph() {
             val emailId = backStackEntry.arguments?.getString("emailId")
             if (emailId != null) {
                 EmailDetailScreen(navController = navController, emailId = emailId)
+            }
+        }
+
+
+        composable("noteDetail/{noteId}") { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("noteId")
+            if (noteId != null) {
+                NoteDetailScreen(navController = navController, noteId = noteId)
             }
         }
 

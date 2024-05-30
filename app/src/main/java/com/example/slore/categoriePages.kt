@@ -78,17 +78,18 @@ import java.util.Locale
 
 
 data class ThoughtEntry(
+    val id: String = "",
     val heading: String = "",
     val thought: String = "",
-    val message: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )
 
 
 data class NoteEntry(
+    val id: String = "",
     val heading: String = "",
     val note: String = "",
-    val message: String = ""
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 
@@ -117,7 +118,7 @@ fun addEmailEntry(@NonNull userId: String, emailEntry: EmailEntry) {
         }
 }
 
-fun addThoughtEntry(@NonNull userId: String, thoughtEntry: ThoughtEntry) {
+fun addThoughtEntry(userId: String, thoughtEntry: ThoughtEntry) {
     val firestore = FirebaseFirestore.getInstance()
     firestore.collection("users").document(userId).collection("thoughts")
         .add(thoughtEntry)
@@ -180,6 +181,10 @@ fun PasswordScreen(navController: NavHostController) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
 
+    val currentDateTime = remember {
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+    }
+
     MaterialTheme {
         Box(
             modifier = Modifier
@@ -204,6 +209,16 @@ fun PasswordScreen(navController: NavHostController) {
                             .clickable { navController.popBackStack() }
                             .padding(16.dp).size(35.dp).offset(x = (-27).dp)
                     )
+
+                    Text(
+                        text = currentDateTime,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+
+
                     TextButton(
                         onClick = {
                             val passwordEntry = PasswordEntry(
@@ -211,7 +226,9 @@ fun PasswordScreen(navController: NavHostController) {
                                 username = username.text,
                                 password = password.text,
                                 memorableNotes = memorableNotes.text,
-                                message = message.text // Save the message
+                                message = message.text, // Save the message
+                                timestamp = System.currentTimeMillis()
+
                             )
 
                             user?.let {
@@ -383,6 +400,11 @@ fun EmailsScreen(navController: NavHostController) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
 
+
+    val currentDateTime = remember {
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+    }
+
     MaterialTheme {
         Box(
             modifier = Modifier
@@ -409,13 +431,23 @@ fun EmailsScreen(navController: NavHostController) {
                             .size(35.dp)
                             .offset(x = (-27).dp)
                     )
+
+                    Text(
+                        text = currentDateTime,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+
                     TextButton(
                         onClick = {
                             val emailEntry = EmailEntry(
                                 heading = headerText.text,
                                 username = username.text,
                                 password = password.text,
-                                message = message.text
+                                message = message.text,
+                                timestamp = System.currentTimeMillis()
                             )
 
                             user?.let {
@@ -575,14 +607,12 @@ fun EmailsScreen(navController: NavHostController) {
 fun ThoughtsScreen(navController: NavHostController) {
     var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var thought by remember { mutableStateOf(TextFieldValue("")) }
-    var message by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
 
     val scrollState = rememberScrollState()
     val keyboardController = LocalSoftwareKeyboardController.current
-    val context = LocalContext.current
 
     val currentDateTime = remember {
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
@@ -614,6 +644,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                             .size(35.dp)
                             .offset(x = (-27).dp)
                     )
+
                     Text(
                         text = currentDateTime,
                         fontSize = 14.sp,
@@ -621,12 +652,12 @@ fun ThoughtsScreen(navController: NavHostController) {
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
+
                     TextButton(
                         onClick = {
                             val thoughtEntry = ThoughtEntry(
                                 heading = headerText.text,
                                 thought = thought.text,
-                                message = message.text,
                                 timestamp = System.currentTimeMillis()
                             )
 
@@ -731,6 +762,7 @@ fun ThoughtsScreen(navController: NavHostController) {
 }
 
 
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun NotesScreen(navController: NavHostController) {
@@ -741,9 +773,10 @@ fun NotesScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
 
-    val scrollState = rememberScrollState()
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val context = LocalContext.current
+    val currentDateTime = remember {
+        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+    }
+
 
     MaterialTheme {
         Box(
@@ -771,12 +804,21 @@ fun NotesScreen(navController: NavHostController) {
                             .size(35.dp)
                             .offset(x = (-27).dp)
                     )
+
+                    Text(
+                        text = currentDateTime,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+
                     TextButton(
                         onClick = {
                             val noteEntry = NoteEntry(
                                 heading = headerText.text,
                                 note = note.text,
-                                message = message.text
+                                timestamp = System.currentTimeMillis()
                             )
 
                             user?.let {
