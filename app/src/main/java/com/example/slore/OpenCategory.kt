@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Star
@@ -37,6 +39,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -183,6 +186,10 @@ fun PasswordsScreenCategory(navController: NavHostController) {
 @Composable
 fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry>) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+    var showSnackbar by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -198,21 +205,105 @@ fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry
                         navController.navigate("passwordDetail/${item.id}")
                     }
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
-                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Text(
-                        text = item.heading,
-                        style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                    )
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = item.heading,
+                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        )
+                    }
+                    Box {
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    documentIdToDelete = item.id
+                                    expanded = false
+                                    showDialog = true
+                                },
+                                text = { Text("Remove Document") }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Caution") },
+            text = { Text("Once you remove the document it cannot be recovered.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                        val firestore = FirebaseFirestore.getInstance()
+                        firestore.collection("users")
+                            .document(userId)
+                            .collection("passwords")
+                            .document(documentIdToDelete ?: "")
+                            .delete()
+                            .addOnSuccessListener {
+                                showDialog = false
+                                showSnackbar = true
+                                scope.launch {
+                                    delay(1500)
+                                    showSnackbar = false
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                e.printStackTrace()
+                                // Handle failure case
+                            }
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showSnackbar) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Successfully deleted",
+                    color = Color.White,
+                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                )
+            }
+        }
+    }
 }
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -405,6 +496,11 @@ fun EmailsEntryScreenCategory(navController: NavHostController) {
 @Composable
 fun EmailItemList(navController: NavHostController, items: List<EmailEntry>) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+    var showSnackbar by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -419,16 +515,98 @@ fun EmailItemList(navController: NavHostController, items: List<EmailEntry>) {
                         navController.navigate("emailDetail/${item.id}")
                     }
             ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = item.heading,
+                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        )
+                    }
+                    Box {
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    documentIdToDelete = item.id
+                                    expanded = false
+                                    showDialog = true
+                                },
+                                text = { Text("Remove Document") }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Caution") },
+            text = { Text("Once you remove the document it cannot be recovered.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                        val firestore = FirebaseFirestore.getInstance()
+                        firestore.collection("users")
+                            .document(userId)
+                            .collection("passwords")
+                            .document(documentIdToDelete ?: "")
+                            .delete()
+                            .addOnSuccessListener {
+                                showDialog = false
+                                showSnackbar = true
+                                scope.launch {
+                                    delay(1500)
+                                    showSnackbar = false
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                e.printStackTrace()
+                                // Handle failure case
+                            }
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showSnackbar) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
                 Text(
-                    text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
-                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = item.heading,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(16.dp)
+                    text = "Successfully deleted",
+                    color = Color.White,
+                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 )
             }
         }
@@ -622,6 +800,10 @@ fun ThoughtsEntryScreenCategory(navController: NavHostController) {
 @Composable
 fun ThoughtItemList(navController: NavHostController, items: List<ThoughtEntry>) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+    var showSnackbar by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -637,15 +819,98 @@ fun ThoughtItemList(navController: NavHostController, items: List<ThoughtEntry>)
                         navController.navigate("thoughtDetail/${item.id}")
                     }
             ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = item.heading,
+                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        )
+                    }
+                    Box {
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    documentIdToDelete = item.id
+                                    expanded = false
+                                    showDialog = true
+                                },
+                                text = { Text("Remove Document") }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Caution") },
+            text = { Text("Once you remove the document it cannot be recovered.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                        val firestore = FirebaseFirestore.getInstance()
+                        firestore.collection("users")
+                            .document(userId)
+                            .collection("passwords")
+                            .document(documentIdToDelete ?: "")
+                            .delete()
+                            .addOnSuccessListener {
+                                showDialog = false
+                                showSnackbar = true
+                                scope.launch {
+                                    delay(1500)
+                                    showSnackbar = false
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                e.printStackTrace()
+                                // Handle failure case
+                            }
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showSnackbar) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
                 Text(
-                    text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
-                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = item.heading,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(16.dp)
+                    text = "Successfully deleted",
+                    color = Color.White,
+                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 )
             }
         }
@@ -814,6 +1079,11 @@ fun NotesEntryScreenCategory(navController: NavHostController) {
 @Composable
 fun NoteItemList(navController: NavHostController, items: List<NoteEntry>) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    var showDialog by remember { mutableStateOf(false) }
+    var documentIdToDelete by remember { mutableStateOf<String?>(null) }
+    var showSnackbar by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -828,15 +1098,98 @@ fun NoteItemList(navController: NavHostController, items: List<NoteEntry>) {
                         navController.navigate("noteDetail/${item.id}")
                     }
             ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = item.heading,
+                            style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                        )
+                    }
+                    Box {
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    documentIdToDelete = item.id
+                                    expanded = false
+                                    showDialog = true
+                                },
+                                text = { Text("Remove Document") }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Caution") },
+            text = { Text("Once you remove the document it cannot be recovered.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+                        val firestore = FirebaseFirestore.getInstance()
+                        firestore.collection("users")
+                            .document(userId)
+                            .collection("passwords")
+                            .document(documentIdToDelete ?: "")
+                            .delete()
+                            .addOnSuccessListener {
+                                showDialog = false
+                                showSnackbar = true
+                                scope.launch {
+                                    delay(1500)
+                                    showSnackbar = false
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                e.printStackTrace()
+                                // Handle failure case
+                            }
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showSnackbar) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
                 Text(
-                    text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
-                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = item.heading,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(16.dp)
+                    text = "Successfully deleted",
+                    color = Color.White,
+                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 )
             }
         }
