@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,6 +39,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Date
 
 data class PasswordEntry(
     val id: String = "",
@@ -101,7 +105,7 @@ fun OpenCategoryScreen(navController: NavHostController) {
 
         CategoryItem(
             text = "Thoughts",
-            icon = Icons.Default.Lightbulb,
+            icon = Icons.Default.Star,
             onClick = { navController.navigate("hello") },
             iconSize = iconSize
         )
@@ -114,6 +118,8 @@ fun OpenCategoryScreen(navController: NavHostController) {
             onClick = { navController.navigate("notes1") },
             iconSize = iconSize
         )
+
+        Divider()
     }
 }
 
@@ -173,8 +179,11 @@ fun PasswordsScreenCategory(navController: NavHostController) {
     }
 }
 
+
 @Composable
 fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry>) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -189,15 +198,22 @@ fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry
                         navController.navigate("passwordDetail/${item.id}")
                     }
             ) {
-                Text(
-                    text = item.heading,
-                    style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
-                    modifier = Modifier.padding(16.dp)
-                )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                        style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = item.heading,
+                        style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
+                    )
+                }
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -270,7 +286,7 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF7E8C2))
+                    .background(Color(0xFFF5F5F5))
                     .padding(16.dp)
                     .pointerInput(Unit) {}
             ) {
@@ -388,6 +404,7 @@ fun EmailsEntryScreenCategory(navController: NavHostController) {
 
 @Composable
 fun EmailItemList(navController: NavHostController, items: List<EmailEntry>) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -402,6 +419,12 @@ fun EmailItemList(navController: NavHostController, items: List<EmailEntry>) {
                         navController.navigate("emailDetail/${item.id}")
                     }
             ) {
+
+                Text(
+                    text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
                 Text(
                     text = item.heading,
                     style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
@@ -480,7 +503,7 @@ fun EmailDetailScreen(navController: NavHostController, emailId: String) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF7E8C2))
+                    .background(Color(0xFFF5F5F5))
                     .padding(16.dp)
                     .pointerInput(Unit) {}
             ) {
@@ -598,6 +621,8 @@ fun ThoughtsEntryScreenCategory(navController: NavHostController) {
 
 @Composable
 fun ThoughtItemList(navController: NavHostController, items: List<ThoughtEntry>) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -612,6 +637,11 @@ fun ThoughtItemList(navController: NavHostController, items: List<ThoughtEntry>)
                         navController.navigate("thoughtDetail/${item.id}")
                     }
             ) {
+                Text(
+                    text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
                 Text(
                     text = item.heading,
                     style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
@@ -691,7 +721,7 @@ fun ThoughtDetailScreen(navController: NavHostController, thoughtId: String) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF7E8C2))
+                    .background(Color(0xFFF5F5F5))
                     .padding(16.dp)
                     .pointerInput(Unit) {}
             ) {
@@ -783,6 +813,7 @@ fun NotesEntryScreenCategory(navController: NavHostController) {
 
 @Composable
 fun NoteItemList(navController: NavHostController, items: List<NoteEntry>) {
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -797,6 +828,11 @@ fun NoteItemList(navController: NavHostController, items: List<NoteEntry>) {
                         navController.navigate("noteDetail/${item.id}")
                     }
             ) {
+                Text(
+                    text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
+                    style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
                 Text(
                     text = item.heading,
                     style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold),
@@ -877,7 +913,7 @@ fun NoteDetailScreen(navController: NavHostController, noteId: String) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFF7E8C2))
+                    .background(Color(0xFFF5F5F5))
                     .padding(16.dp)
                     .pointerInput(Unit) {}
             ) {
