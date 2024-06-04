@@ -2,6 +2,7 @@ package com.example.slore
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,11 +23,13 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -71,6 +74,10 @@ data class EmailEntry(
 
 @Composable
 fun OpenCategoryScreen(navController: NavHostController) {
+    val showGeminiDialog = remember { mutableStateOf(false) }
+    var text by rememberSaveable { mutableStateOf("") }
+
+
     val iconSize = 24.dp
 
     Column(
@@ -124,6 +131,27 @@ fun OpenCategoryScreen(navController: NavHostController) {
 
         Divider()
     }
+    // Home icon placed outside the card
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomCenter // Centering the Home icon
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
+            contentDescription = "Home Image",
+            modifier = Modifier
+                .size(90.dp) // Increase the size of the image
+                .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
+        )
+    }
+
+    // Show Gemini dialog when showGeminiDialog is true
+    if (showGeminiDialog.value) {
+        GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
+    }
+
 }
 
 @Composable

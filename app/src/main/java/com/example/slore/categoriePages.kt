@@ -3,6 +3,7 @@ package com.example.slore
 
 import android.util.Log
 import androidx.annotation.NonNull
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -29,11 +30,13 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -175,6 +178,8 @@ fun PasswordScreen(navController: NavHostController) {
     var memorableNotes by remember { mutableStateOf(TextFieldValue("")) }
     var message by remember { mutableStateOf(TextFieldValue("")) } // New field
     var showPopupMessage by remember { mutableStateOf(false) }
+    val showGeminiDialog = remember { mutableStateOf(false) }//used for gemini dialog box
+    var text by rememberSaveable { mutableStateOf("") }//used for gemini dialog box
     val scope = rememberCoroutineScope()
     val user: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     val scrollState = rememberScrollState()
@@ -381,6 +386,27 @@ fun PasswordScreen(navController: NavHostController) {
             }
         }
     }
+
+    // Home icon placed outside the card
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomCenter // Centering the Home icon
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
+            contentDescription = "Home Image",
+            modifier = Modifier
+                .size(90.dp) // Increase the size of the image
+                .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
+        )
+    }
+
+    // Show Gemini dialog when showGeminiDialog is true
+    if (showGeminiDialog.value) {
+        GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
+    }
 }
 
 
@@ -393,6 +419,8 @@ fun EmailsScreen(navController: NavHostController) {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var message by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
+    val showGeminiDialog = remember { mutableStateOf(false) }//used for gemini dialog box
+    var text by rememberSaveable { mutableStateOf("") }//used for gemini dialog box
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
 
@@ -608,6 +636,8 @@ fun ThoughtsScreen(navController: NavHostController) {
     var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var thought by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
+    val showGeminiDialog = remember { mutableStateOf(false) }//used for gemini dialog box
+    var text by rememberSaveable { mutableStateOf("") }//used for gemini dialog box
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
 
@@ -759,6 +789,27 @@ fun ThoughtsScreen(navController: NavHostController) {
             }
         }
     }
+
+    // Home icon placed outside the card
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomCenter // Centering the Home icon
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
+            contentDescription = "Home Image",
+            modifier = Modifier
+                .size(90.dp) // Increase the size of the image
+                .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
+        )
+    }
+
+    // Show Gemini dialog when showGeminiDialog is true
+    if (showGeminiDialog.value) {
+        GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
+    }
 }
 
 @Composable
@@ -767,6 +818,8 @@ fun NotesScreen(navController: NavHostController) {
     var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var note by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
+    val showGeminiDialog = remember { mutableStateOf(false) }//used for gemini dialog box
+    var text by rememberSaveable { mutableStateOf("") }//used for gemini dialog box
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
 
@@ -930,4 +983,27 @@ fun NotesScreen(navController: NavHostController) {
             }
         }
     }
+
+
+    // Home icon placed outside the card
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomCenter // Centering the Home icon
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
+            contentDescription = "Home Image",
+            modifier = Modifier
+                .size(90.dp) // Increase the size of the image
+                .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
+        )
+    }
+
+    // Show Gemini dialog when showGeminiDialog is true
+    if (showGeminiDialog.value) {
+        GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
+    }
+
 }

@@ -283,9 +283,14 @@ fun GeminiDialog(
                             // Submit the query and get the response
                             isLoading = true
                             coroutineScope.launch {
-                                val chatResponse = model.startChat(listOf()).sendMessage(inputText)
-                                delay(2000) // Simulate 2 seconds delay
-                                responseText = chatResponse.text ?: ""
+                                try {
+                                    val chatResponse = model.startChat(listOf()).sendMessage(inputText)
+                                    delay(2000) // Simulate 2 seconds delay
+                                    responseText = chatResponse.text ?: ""
+                                } catch (e: Exception) {
+                                    // Handle the exception by setting the responseText to your error message
+                                    responseText = "You are offline. Please connect to the internet and try again."
+                                }
                                 isLoading = false
                             }
                         },
