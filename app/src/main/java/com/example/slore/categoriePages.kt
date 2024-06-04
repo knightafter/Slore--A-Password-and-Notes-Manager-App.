@@ -154,7 +154,7 @@ fun CenteredPopupMessage(message: String, onDismiss: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
-                .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                .background(Color.Black, shape = RoundedCornerShape(8.dp))
                 .padding(16.dp)
         ) {
             Text(text = message, color = Color.White)
@@ -213,7 +213,7 @@ fun PasswordScreen(navController: NavHostController) {
                     Text(
                         text = currentDateTime,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = Color.Black,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -435,7 +435,7 @@ fun EmailsScreen(navController: NavHostController) {
                     Text(
                         text = currentDateTime,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = Color.Black,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -648,7 +648,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                     Text(
                         text = currentDateTime,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = Color.Black,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -742,7 +742,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                                 if (thought.text.isEmpty()) {
                                     Text(
                                         text = "Thoughts...",
-                                        style = TextStyle(fontSize = 16.sp, color = Color.Gray)
+                                        style = TextStyle(fontSize = 16.sp, color = Color.Black)
                                     )
                                 }
                                 innerTextField() // This will place the actual BasicTextField
@@ -761,14 +761,11 @@ fun ThoughtsScreen(navController: NavHostController) {
     }
 }
 
-
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun NotesScreen(navController: NavHostController) {
     var headerText by remember { mutableStateOf(TextFieldValue("")) }
     var note by remember { mutableStateOf(TextFieldValue("")) }
-    var message by remember { mutableStateOf(TextFieldValue("")) }
     var showPopupMessage by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val user = FirebaseAuth.getInstance().currentUser
@@ -808,7 +805,7 @@ fun NotesScreen(navController: NavHostController) {
                     Text(
                         text = currentDateTime,
                         fontSize = 14.sp,
-                        color = Color.Gray,
+                        color = Color.Black,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
@@ -894,8 +891,8 @@ fun NotesScreen(navController: NavHostController) {
                         .background(Color(0xFFF5F5F5))
                 ) {
                     BasicTextField(
-                        value = textFieldValue,
-                        onValueChange = { textFieldValue = it },
+                        value = note,
+                        onValueChange = { note = it },
                         textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Default
@@ -906,17 +903,17 @@ fun NotesScreen(navController: NavHostController) {
                         modifier = Modifier
                             .fillMaxSize()
                             .onGloballyPositioned { coordinates ->
-                                textFieldHeight = coordinates.size.height
+                                // capture the height of the BasicTextField
                             },
                         decorationBox = { innerTextField ->
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                             ) {
-                                if (textFieldValue.text.isEmpty()) {
+                                if (note.text.isEmpty()) {
                                     Text(
                                         text = "Notes...",
-                                        style = TextStyle(fontSize = 16.sp, color = Color.Gray)
+                                        style = TextStyle(fontSize = 16.sp, color = Color.Black)
                                     )
                                 }
                                 innerTextField() // This will place the actual BasicTextField

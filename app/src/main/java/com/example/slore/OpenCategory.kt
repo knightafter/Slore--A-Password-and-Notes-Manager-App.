@@ -396,7 +396,7 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
                         value = heading,
                         onValueChange = { heading = it },
                         placeholder = { Text(text = "Heading...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -404,7 +404,7 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
                         value = username,
                         onValueChange = { username = it },
                         placeholder = { Text(text = "Username...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -417,7 +417,7 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
                         value = password,
                         onValueChange = { password = it },
                         placeholder = { Text(text = "Password...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -430,7 +430,7 @@ fun PasswordDetailScreen(navController: NavHostController, passwordId: String) {
                         value = message,
                         onValueChange = { message = it },
                         placeholder = { Text(text = "Message...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                         singleLine = false,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -563,7 +563,7 @@ fun EmailItemList(navController: NavHostController, items: List<EmailEntry>) {
                         val firestore = FirebaseFirestore.getInstance()
                         firestore.collection("users")
                             .document(userId)
-                            .collection("passwords")
+                            .collection("emails")
                             .document(documentIdToDelete ?: "")
                             .delete()
                             .addOnSuccessListener {
@@ -700,7 +700,7 @@ fun EmailDetailScreen(navController: NavHostController, emailId: String) {
                         value = heading,
                         onValueChange = { heading = it },
                         placeholder = { Text(text = "Heading...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -708,7 +708,7 @@ fun EmailDetailScreen(navController: NavHostController, emailId: String) {
                         value = username,
                         onValueChange = { username = it },
                         placeholder = { Text(text = "Username...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -721,7 +721,7 @@ fun EmailDetailScreen(navController: NavHostController, emailId: String) {
                         value = password,
                         onValueChange = { password = it },
                         placeholder = { Text(text = "Password...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -733,8 +733,8 @@ fun EmailDetailScreen(navController: NavHostController, emailId: String) {
                     TextField(
                         value = message,
                         onValueChange = { message = it },
-                        placeholder = { Text(text = "Message...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        placeholder = { Text(text = "Message...")},
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                         singleLine = false,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -867,7 +867,7 @@ fun ThoughtItemList(navController: NavHostController, items: List<ThoughtEntry>)
                         val firestore = FirebaseFirestore.getInstance()
                         firestore.collection("users")
                             .document(userId)
-                            .collection("passwords")
+                            .collection("thoughts")
                             .document(documentIdToDelete ?: "")
                             .delete()
                             .addOnSuccessListener {
@@ -1005,20 +1005,39 @@ fun ThoughtDetailScreen(navController: NavHostController, thoughtId: String) {
                         value = heading,
                         onValueChange = { heading = it },
                         placeholder = { Text(text = "Heading...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    TextField(
-                        value = thought,
-                        onValueChange = { thought = it },
-                        placeholder = { Text(text = "Content...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                        singleLine = false,
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                    )
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    ) {
+                        BasicTextField(
+                            value = thought,
+                            onValueChange = { thought = it },
+                            textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                            singleLine = false,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            decorationBox = { innerTextField ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                ) {
+                                    if (thought.text.isEmpty()) {
+                                        Text(
+                                            text = "thoughts......",
+                                            style = TextStyle(fontSize = 16.sp, color = Color.Black)
+                                        )
+                                    }
+                                    innerTextField() // This will place the actual BasicTextField
+                                }
+                            }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -1146,7 +1165,7 @@ fun NoteItemList(navController: NavHostController, items: List<NoteEntry>) {
                         val firestore = FirebaseFirestore.getInstance()
                         firestore.collection("users")
                             .document(userId)
-                            .collection("passwords")
+                            .collection("notes")
                             .document(documentIdToDelete ?: "")
                             .delete()
                             .addOnSuccessListener {
@@ -1285,20 +1304,41 @@ fun NoteDetailScreen(navController: NavHostController, noteId: String) {
                         value = heading,
                         onValueChange = { heading = it },
                         placeholder = { Text(text = "Heading...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
+                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    TextField(
-                        value = note,
-                        onValueChange = { note = it },
-                        placeholder = { Text(text = "Content...") },
-                        textStyle = TextStyle(fontSize = 24.sp, color = Color.Gray),
-                        singleLine = false,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                    )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp)
+                        ) {
+                            BasicTextField(
+                                value = note,
+                                onValueChange = { note = it },
+                                textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
+                                singleLine = false,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                    ) {
+                                        if (note.text.isEmpty()) {
+                                            Text(
+                                                text = "Notes......",
+                                                style = TextStyle(fontSize = 24.sp, color = Color.Black)
+                                            )
+                                        }
+                                        innerTextField() // This will place the actual BasicTextField
+                                    }
+                                }
+                            )
+                        }
+
 
                     Spacer(modifier = Modifier.height(16.dp))
 
