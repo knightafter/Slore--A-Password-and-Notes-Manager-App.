@@ -40,8 +40,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -397,8 +399,8 @@ fun PasswordScreen(navController: NavHostController) {
         Image(
             painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
             contentDescription = "Home Image",
-            modifier = Modifier
-                .size(90.dp) // Increase the size of the image
+            modifier = Modifier.offset(y=-650.dp)
+                .size(70.dp) // Increase the size of the image
                 .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
         )
     }
@@ -626,6 +628,28 @@ fun EmailsScreen(navController: NavHostController) {
             }
         }
     }
+
+    // Home icon placed outside the card
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomCenter // Centering the Home icon
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
+            contentDescription = "Home Image",
+            modifier = Modifier.offset(y=-650.dp)
+                .size(70.dp) // Increase the size of the image
+                .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
+        )
+    }
+
+    // Show Gemini dialog when showGeminiDialog is true
+    if (showGeminiDialog.value) {
+        GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
+    }
+
 }
 
 
@@ -800,8 +824,8 @@ fun ThoughtsScreen(navController: NavHostController) {
         Image(
             painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
             contentDescription = "Home Image",
-            modifier = Modifier
-                .size(90.dp) // Increase the size of the image
+            modifier = Modifier.offset(y=-650.dp)
+                .size(70.dp) // Increase the size of the image
                 .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
         )
     }
@@ -811,6 +835,8 @@ fun ThoughtsScreen(navController: NavHostController) {
         GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
     }
 }
+
+
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -995,8 +1021,8 @@ fun NotesScreen(navController: NavHostController) {
         Image(
             painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
             contentDescription = "Home Image",
-            modifier = Modifier
-                .size(90.dp) // Increase the size of the image
+            modifier = Modifier.offset(y=-650.dp)
+                .size(70.dp) // Increase the size of the image
                 .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
         )
     }
