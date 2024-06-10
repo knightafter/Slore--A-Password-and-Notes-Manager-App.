@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.generativeai)
+    implementation(libs.androidx.games.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -79,6 +80,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    val compose_version = "1.6.7";
+    implementation ("androidx.compose.foundation:foundation:$compose_version")
 
     val appcompat_version = "1.6.1"
     implementation("androidx.appcompat:appcompat:$appcompat_version")
@@ -102,6 +105,13 @@ dependencies {
 
 // In Android Studio, add the following dependency to your build.gradle.kts file:
     implementation("com.google.ai.client.generativeai:generativeai:0.6.0")
+
+// iText PDF library
+    implementation("com.itextpdf:itext7-core:7.2.3")
+
+// Apache POI libraries for Word document creation
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
 
 
 

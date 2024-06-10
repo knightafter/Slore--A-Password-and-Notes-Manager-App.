@@ -26,13 +26,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -53,6 +56,19 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.content.Context
+import android.util.TypedValue
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 
 /**
@@ -78,8 +94,37 @@ import java.util.Locale
 
 /*the below code demonstrates that when on main screen i press on the big plus button the category pages or option comers are due to the below code*/
 
+/*
+*  ---------- Extension Properties for Millimeters------------
+
+*
+* */
+val Float.mm: Float
+    @Composable get() = this.toDp()
+
+val Int.mm: Float
+    @Composable get() = this.toFloat().toDp()
+
+@Composable
+fun Float.toDp(): Float {
+    val context = LocalContext.current
+    return context.mmToDp(this)
+}
+
+@Composable
+fun Int.toDp(): Float {
+    return this.toFloat().toDp()
+}
+
+fun Context.mmToDp(mm: Float): Float {
+    val densityDpi = resources.displayMetrics.densityDpi
+    val inches = mm / 25.4f
+    val px = inches * densityDpi
+    return px / (densityDpi / 160f)
+}
 
 
+/*   ----end----    */
 
 
 data class ThoughtEntry(
@@ -654,187 +699,9 @@ fun EmailsScreen(navController: NavHostController) {
 
 
 // ThoughtsScreen Composable
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun ThoughtsScreen(navController: NavHostController) {
-    var headerText by remember { mutableStateOf(TextFieldValue("")) }
-    var thought by remember { mutableStateOf(TextFieldValue("")) }
-    var showPopupMessage by remember { mutableStateOf(false) }
-    val showGeminiDialog = remember { mutableStateOf(false) }//used for gemini dialog box
-    var text by rememberSaveable { mutableStateOf("") }//used for gemini dialog box
-    val scope = rememberCoroutineScope()
-    val user = FirebaseAuth.getInstance().currentUser
 
-    val scrollState = rememberScrollState()
-    val keyboardController = LocalSoftwareKeyboardController.current
 
-    val currentDateTime = remember {
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-    }
 
-    MaterialTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                // Top bar with back arrow, date/time, and save button
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        modifier = Modifier
-                            .clickable { navController.popBackStack() }
-                            .padding(16.dp)
-                            .size(35.dp)
-                            .offset(x = (-27).dp)
-                    )
-
-                    Text(
-                        text = currentDateTime,
-                        fontSize = 14.sp,
-                        color = Color.Black,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-
-                    TextButton(
-                        onClick = {
-                            val thoughtEntry = ThoughtEntry(
-                                heading = headerText.text,
-                                thought = thought.text,
-                                timestamp = System.currentTimeMillis()
-                            )
-
-                            user?.let {
-                                addThoughtEntry(it.uid, thoughtEntry)
-                                scope.launch {
-                                    showPopupMessage = true
-                                    delay(1000L) // Show message for 1 second
-                                    navController.navigate("main") {
-                                        popUpTo("thoughts") { inclusive = true }
-                                    }
-                                }
-                            }
-                        }
-                    ) {
-                        Text(
-                            text = "Save",
-                            color = Color(0xFF000080),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Text(
-                    text = "Create a Thought",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 50.dp),
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = headerText,
-                    onValueChange = { headerText = it },
-                    placeholder = { Text(text = "Heading...") },
-                    textStyle = TextStyle(fontSize = 24.sp, color = Color.Black),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        cursorColor = Color.Black,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(16.dp)
-                        .background(Color(0xFFF5F5F5))
-                ) {
-                    BasicTextField(
-                        value = thought,
-                        onValueChange = { thought = it },
-                        textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Default
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { keyboardController?.hide() }
-                        ),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onGloballyPositioned { coordinates ->
-                                // capture the height of the BasicTextField
-                            },
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) {
-                                if (thought.text.isEmpty()) {
-                                    Text(
-                                        text = "Thoughts...",
-                                        style = TextStyle(fontSize = 16.sp, color = Color.Black)
-                                    )
-                                }
-                                innerTextField() // This will place the actual BasicTextField
-                            }
-                        }
-                    )
-                }
-            }
-
-            if (showPopupMessage) {
-                CenteredPopupMessage(message = "Your input is saved.") {
-                    showPopupMessage = false
-                }
-            }
-        }
-    }
-
-    // Home icon placed outside the card
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.BottomCenter // Centering the Home icon
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.artboard_7), // Replace with your image resource ID
-            contentDescription = "Home Image",
-            modifier = Modifier.offset(y=-650.dp)
-                .size(70.dp) // Increase the size of the image
-                .clickable { showGeminiDialog.value = true } // Show Gemini dialog when the image is clicked
-        )
-    }
-
-    // Show Gemini dialog when showGeminiDialog is true
-    if (showGeminiDialog.value) {
-        GeminiDialog(showDialog = showGeminiDialog, text = text) { showGeminiDialog.value = false }
-    }
-}
 
 
 
