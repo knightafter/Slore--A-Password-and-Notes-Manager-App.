@@ -398,6 +398,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                     }
                 )
             }
+
         }
 
 
@@ -425,19 +426,21 @@ fun ThoughtsScreen(navController: NavHostController) {
 
 
 
+
 fun createPdf(context: Context, heading: String, thought: String) {
-    val path = "/storage/emulated/0/Download/Slore-thought.pdf"
+    val path = "/storage/emulated/0/Download/thought.pdf"
     val writer = PdfWriter(path)
     val pdfDoc = com.itextpdf.kernel.pdf.PdfDocument(writer)
     val document = Document(pdfDoc)
     document.add(Paragraph("Heading: $heading"))
     document.add(Paragraph("Thought: $thought"))
     document.close()
-    Toast.makeText(context, "PDF downloaded successfully and it may appear in the files after a minute", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, "PDF downloaded successfully", Toast.LENGTH_SHORT).show()
+    NotificationHelper.showNotification(context, "Download Complete", "PDF downloaded successfully go to your download folder to view it")
 }
 
 fun createWord(context: Context, heading: String, thought: String) {
-    val path = "/storage/emulated/0/Download/Slore-thought.docx"
+    val path = "/storage/emulated/0/Download/thought.docx"
     val document = XWPFDocument()
     val fileOut = FileOutputStream(path)
     val paragraph = document.createParagraph()
@@ -445,5 +448,6 @@ fun createWord(context: Context, heading: String, thought: String) {
     run.setText("Heading: $heading\n\nThought:\n$thought")
     document.write(fileOut)
     fileOut.close()
-    Toast.makeText(context, "Word document downloaded successfully and it may appear in the files after a minute", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, "Word document downloaded successfully", Toast.LENGTH_SHORT).show()
+    NotificationHelper.showNotification(context, "Download Complete", "Word document downloaded successfully go to your download folder to view it")
 }
