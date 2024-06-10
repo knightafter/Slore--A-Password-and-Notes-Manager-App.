@@ -433,7 +433,7 @@ fun createPdf(context: Context, heading: String, thought: String) {
     document.add(Paragraph("Heading: $heading"))
     document.add(Paragraph("Thought: $thought"))
     document.close()
-    Toast.makeText(context, "PDF downloaded successfully and it may appear in the files after a minute ", Toast.LENGTH_SHORT).show()
+    Toast.makeText(context, "PDF downloaded successfully and it may appear in the files after a minute", Toast.LENGTH_SHORT).show()
 }
 
 fun createWord(context: Context, heading: String, thought: String) {
