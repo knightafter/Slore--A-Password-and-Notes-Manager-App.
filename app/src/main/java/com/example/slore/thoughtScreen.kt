@@ -117,15 +117,6 @@ fun ThoughtsScreen(navController: NavHostController) {
                         modifier = Modifier.padding(16.dp)
                     )
 
-                    IconButton(
-                        onClick = { showDownloadDialog = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Download,
-                            contentDescription = "Download",
-                            tint = Color.Black
-                        )
-                    }
 
                     TextButton(
                         onClick = {
@@ -156,6 +147,9 @@ fun ThoughtsScreen(navController: NavHostController) {
                     }
                 }
 
+                Spacer(modifier = Modifier.height(18.dp))
+
+
                 // Plus and minus icons
                 Row(
                     modifier = Modifier
@@ -168,12 +162,15 @@ fun ThoughtsScreen(navController: NavHostController) {
                     IconButton(onClick = {
                         if (zoomLevel > 0.5f) {
                             zoomLevel -= 0.1f
+
                         }
                     }) {
                         Icon(
                             imageVector = Icons.Default.Remove,
                             contentDescription = "Zoom Out",
-                            tint = Color.Black
+                            tint = Color.Black,
+                            modifier = Modifier.size(35.dp)
+
                         )
                     }
 
@@ -185,9 +182,21 @@ fun ThoughtsScreen(navController: NavHostController) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Zoom In",
-                            tint = Color.Black
+                            tint = Color.Black,
+                            modifier = Modifier.size(35.dp)
                         )
                     }
+                }
+
+                IconButton(
+                    onClick = { showDownloadDialog = true },
+                    modifier = Modifier.offset(x = 230.dp, y = -84.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = "Download",
+                        tint = Color.Yellow
+                    )
                 }
 
                 Text(
@@ -256,7 +265,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                                                     text = "Thoughts...",
                                                     style = TextStyle(fontSize = 16.sp * zoomLevel, color = Color.Gray),
                                                     modifier = Modifier
-                                                        .padding(start = 16.dp, bottom = 16.dp)
+                                                        .padding(start = 12.dp, bottom = 16.dp)
                                                 )
                                             }
                                             innerTextField()
@@ -345,7 +354,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                                 }
                             }
                         ) {
-                            Text("OK")
+                            Text("Next")
                         }
                     },
                     dismissButton = {
@@ -411,7 +420,7 @@ fun ThoughtsScreen(navController: NavHostController) {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.artboard_7),
-                contentDescription = "Home Image",
+                contentDescription = "Gemini S image",
                 modifier = Modifier
                     .offset(y = -650.dp)
                     .size(70.dp)
@@ -428,7 +437,7 @@ fun ThoughtsScreen(navController: NavHostController) {
 
 
 fun createPdf(context: Context, heading: String, thought: String) {
-    val path = "/storage/emulated/0/Download/thought.pdf"
+    val path = "/storage/emulated/0/Download/SLore-thought.pdf"
     val writer = PdfWriter(path)
     val pdfDoc = com.itextpdf.kernel.pdf.PdfDocument(writer)
     val document = Document(pdfDoc)
@@ -440,7 +449,7 @@ fun createPdf(context: Context, heading: String, thought: String) {
 }
 
 fun createWord(context: Context, heading: String, thought: String) {
-    val path = "/storage/emulated/0/Download/thought.docx"
+    val path = "/storage/emulated/0/Download/Slore-thought.docx"
     val document = XWPFDocument()
     val fileOut = FileOutputStream(path)
     val paragraph = document.createParagraph()
