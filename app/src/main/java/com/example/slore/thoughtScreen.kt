@@ -1,7 +1,5 @@
 package com.example.slore
 
-import android.util.Log
-import androidx.annotation.NonNull
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.text.font.FontWeight
@@ -55,7 +53,19 @@ import com.itextpdf.layout.element.Paragraph
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.FileOutputStream
 import android.widget.Toast
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewThoughtsScreen() {
+    val navController = rememberNavController()
+    ThoughtsScreen(navController)
+}
 
 
 @Composable
@@ -147,14 +157,15 @@ fun ThoughtsScreen(navController: NavHostController) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+
+                Divider(color = Color.Gray.copy(alpha = 0.5f), thickness = 1.dp)
 
 
                 // Plus and minus icons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .offset(y = -20.dp)
+                        .offset(y = 4.dp)
                         .padding(vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -162,16 +173,22 @@ fun ThoughtsScreen(navController: NavHostController) {
                     IconButton(onClick = {
                         if (zoomLevel > 0.5f) {
                             zoomLevel -= 0.1f
-
                         }
                     }) {
-                        Icon(
-                            imageVector = Icons.Default.Remove,
-                            contentDescription = "Zoom Out",
-                            tint = Color.Black,
-                            modifier = Modifier.size(35.dp)
-
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(23.dp) // Adjust the size as needed
+                                .clip(CircleShape)
+                                .background(Color.Gray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "Zoom Out",
+                                tint = Color.White, // Set the icon color to white for better visibility
+                                modifier = Modifier.size(35.dp)
+                            )
+                        }
                     }
 
                     IconButton(onClick = {
@@ -179,31 +196,41 @@ fun ThoughtsScreen(navController: NavHostController) {
                             zoomLevel += 0.1f
                         }
                     }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Zoom In",
-                            tint = Color.Black,
-                            modifier = Modifier.size(35.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(23.dp) // Adjust the size as needed
+                                .clip(CircleShape)
+                                .background(Color.Gray),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Zoom In",
+                                tint = Color.White, // Set the icon color to white for better visibility
+                                modifier = Modifier.size(35.dp)
+                            )
+                        }
                     }
                 }
 
+
                 IconButton(
                     onClick = { showDownloadDialog = true },
-                    modifier = Modifier.offset(x = 230.dp, y = -84.dp)
+                    modifier = Modifier.offset(x = 223.dp, y = -74.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Download,
                         contentDescription = "Download",
-                        tint = Color.Yellow
+                        tint = Color(0xFF0c3a5e),
+                        modifier = Modifier.size(35.dp) // Increase the size to 48.dp or any other value you prefer
                     )
                 }
 
                 Text(
                     text = "Create a Thought",
-                    fontSize = 32.sp,
+                    fontSize = 29.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.offset(x = 20.dp),
+                    modifier = Modifier,
                     textAlign = TextAlign.Center
                 )
 
@@ -227,14 +254,14 @@ fun ThoughtsScreen(navController: NavHostController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                var totalPages by remember { mutableStateOf(3) }
+                var totalPages by remember { mutableStateOf(1) }
 
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                         .padding(16.dp)
-                        .background(Color(0xFFF5F5F5))
+                        .background(Color(0xFFE6E2E2))
                 ) {
                     Column {
                         repeat(totalPages) { pageIndex ->
@@ -422,7 +449,7 @@ fun ThoughtsScreen(navController: NavHostController) {
                 painter = painterResource(id = R.drawable.artboard_7),
                 contentDescription = "Gemini S image",
                 modifier = Modifier
-                    .offset(y = -650.dp)
+                    .offset(y = -619.dp)
                     .size(70.dp)
                     .clickable { showGeminiDialog.value = true }
             )
