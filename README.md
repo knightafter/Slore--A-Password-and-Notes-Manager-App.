@@ -4,7 +4,4 @@ but not in the emailscreen and the thoughtscreen composable
 ```kotlin
 
 
-whad
-
-
 
