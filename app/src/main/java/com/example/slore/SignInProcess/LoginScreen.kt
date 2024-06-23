@@ -40,7 +40,7 @@ fun LoginScreen(navController: NavController) {
             .padding(16.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.slore_logo), // Replace with your actual logo resource
+            painter = painterResource(id = R.drawable.slore_logo), 
             contentDescription = "App Logo",
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
