@@ -27,11 +27,14 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Note
+import androidx.compose.material.icons.filled.PersonPin
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.painterResource
+import coil.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import coil.compose.rememberImagePainter
 
 @Composable
 fun MainContent(navController: NavHostController) {
@@ -58,14 +61,16 @@ fun MainContent(navController: NavHostController) {
                 contentAlignment = Alignment.TopEnd
             ) {
 
-                Image( painter = painterResource(id = R.drawable.artboard_6), contentDescription = "Brand text",
+                Image(  painter = rememberAsyncImagePainter
+                    ("https://i.imgur.com/c3pJ22r.png"),
+                    contentDescription = "Brand text",
                     modifier = Modifier
                         .height(400.dp) // Increase the height to make the image larger
                         .width(400.dp)
                         .offset(x = -40.dp ,y = (-40).dp)
                 )
 
-                Icon(                    imageVector = Icons.Default.Person,
+                Icon(                    imageVector = Icons.Default.PersonPin,
                     contentDescription = "Profile Icon",
                     modifier = Modifier.offset(y = 50.dp)
                         .size(32.dp)

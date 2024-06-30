@@ -113,8 +113,8 @@ dependencies {
     implementation("org.apache.poi:poi:5.2.3")
     implementation("org.apache.poi:poi-ooxml:5.2.3")
 
-
-
+    //coil dependency
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
 
 }
