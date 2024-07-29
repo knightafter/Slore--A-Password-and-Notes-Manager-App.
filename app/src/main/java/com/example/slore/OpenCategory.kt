@@ -234,7 +234,16 @@ fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry
                     }
             ) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Box(
+                        modifier = Modifier
+                            .width(18.dp)
+                            .fillMaxHeight()
+                            .background(Color(0xFF103A5E))
+                    )
+                    Column(modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp) // Add padding to separate the bar and the content
+                    ) {
                         Text(
                             text = "Created on: ${dateFormat.format(Date(item.timestamp))}",
                             style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Light),
@@ -330,8 +339,6 @@ fun PasswordItemList(navController: NavHostController, items: List<PasswordEntry
         }
     }
 }
-
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -115,6 +115,8 @@ dependencies {
 
     //coil dependency
     implementation("io.coil-kt:coil-compose:2.6.0")
+// to reduce the quality of the video
+    implementation ("com.arthenica:ffmpeg-kit-full:6.0-2")
 
 
 }

@@ -29,7 +29,7 @@ fun NavGraph() {
         composable("home") { HomeScreen(navController) }
         composable("forgotPassword") { ForgotPasswordScreen(navController = navController) }
         composable("openCategory") { OpenCategoryScreen(navController = navController) }
-        composable("openTimeline") { OpenTimelineScreen(navController = navController) }
+        composable("TasksScreen") { TasksScreen(navController = navController) }
         composable("passwords") { PasswordsScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable
         composable("emailsscreen") { EmailsEntryScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable
         composable("hello") { ThoughtsEntryScreenCategory(navController = navController) }//using this composable in the OpenCategoryScreen composable

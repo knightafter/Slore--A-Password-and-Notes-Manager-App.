@@ -139,7 +139,7 @@ fun MainContent(navController: NavHostController) {
                             contentDescription = "Image 3",
                             modifier = Modifier
                                 .size(40.dp)
-                                .clickable { navController.navigate("openTimeline") }
+                                .clickable { navController.navigate("TasksScreen") }
                         )
                     }
                 }
