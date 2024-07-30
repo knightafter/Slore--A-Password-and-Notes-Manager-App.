@@ -1,4 +1,4 @@
-﻿# **Slore** - A Password and Notes Manager App.   📝
+﻿# **Slore** - A Password and Notes Manager/ Saver App.   📝
 
    👉  ![WhatsApp Image 2024-07-30 at 9 25 34 PM](https://github.com/user-attachments/assets/8665b098-b3cd-419f-a8f4-3ef85f0815d9)  👈
 
