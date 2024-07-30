@@ -5,8 +5,11 @@
 ## Dependency on third party:
 
    ⭕ Firebase Authentication
+   
    ⭕ Firestore
+   
    ⭕ Gemini AI API
+   
    
 
 
@@ -25,7 +28,11 @@ not have to go outside of the App.
 
 ### Check The Demonstration of AI:
 
-https://github.com/user-attachments/assets/d5ba5417-b4c9-4549-acf1-79bcb9d02764
+
+
+https://github.com/user-attachments/assets/6aad53e2-4a12-4283-82cf-cd476e41f3e7
+
+
 
 ### Feature 2️⃣:
 
@@ -49,7 +56,10 @@ Third feature is about the TODO's section which is accessible from the below car
    .. As for the AI you have to create your account on the AI studio and from there you have to access your AI model API and then you can add that API in the project in the
       GeminiAIIntegration.kt file
 
+### the below are the website 
+
       https://ai.google.dev/aistudio
+      https://firebase.google.com/
 
       
 
