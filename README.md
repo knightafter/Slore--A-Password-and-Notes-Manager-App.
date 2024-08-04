@@ -2,6 +2,9 @@
 
    👉  ![WhatsApp Image 2024-07-30 at 9 25 34 PM](https://github.com/user-attachments/assets/0af4b82d-e40d-4d59-975b-4dc38a910b4f) 👈
 
+   ### 🔎 Setup of the App is in the below of the readme file so make sure to read all the file for fully implementation of the App in Android Studio, Youtube video also attached below 
+   ### for the easiness.
+
 ## Dependency on third party:
 
    ⭕ Firebase Authentication
@@ -15,7 +18,8 @@
 
 ## Intro:
   Slore is an Android App built with **Kotlin and jetpack compose** (UI Kit) it is a cloud based application which stores Passwords, Emails, Notes and your Thoughts (currently) category 
-  based, and the user can access his documents from the seperate section.
+  based, and the user can access his documents from the seperate section. I am using the LASTPASS and the NOTES taking apps and I have found that I have to use different apps to the do  
+  multitasking so I have thought that why not to make my own app which uses the modern day technology including AI integration.
 
 ![WhatsApp Image 2024-07-30 at 9 06 01 PM (1)](https://github.com/user-attachments/assets/82fc122a-f858-4cc6-b71c-6bccc30dd2d1)
 
@@ -63,6 +67,15 @@ Third feature is about the TODO's section which is accessible from the below car
       https://ai.google.dev/aistudio
       https://firebase.google.com/
 
-      
+
+◽ so lets start 👇
+
+◼ You can even download the zip file from the github main code page or if you have git then just copy the link and then paste it in the git and clone the repository.
+
+      ![1](https://github.com/user-attachments/assets/9e630119-9315-4f5d-baf6-c2e365e2798a)
+
+◼ I have used Firebase Authentication and Firestore(for database), go to the above following link  (https://firebase.google.com/) and make the new project in Firebase and make sure to add the SHS1 code in the firebase from the Android Studio (all the dependencies are already added to the project although you can update all the dependencies version on yourself for the better performance)
+
+
 
 
