@@ -76,6 +76,22 @@ Third feature is about the TODO's section which is accessible from the below car
 
 ◼ I have used Firebase Authentication and Firestore(for database), go to the above following link  (https://firebase.google.com/) and make the new project in Firebase and make sure to add the SHS1 code in the firebase from the Android Studio (all the dependencies are already added to the project although you can update all the dependencies version on yourself for the better performance)
 
+#Rights:
+
+Copyright [2024] [Muhammad Ahad Naseer]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
 
 
 
