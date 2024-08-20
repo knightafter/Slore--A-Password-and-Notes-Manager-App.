@@ -12,7 +12,7 @@ import kotlinx.coroutines.runBlocking
 
 val model = GenerativeModel(
     "gemini-1.5-flash-latest",
-    apiKey = "AIzaSyAu9uYZF2SNNMSkZrH89I0mqnigkPKiuPA",
+    apiKey = "YOUR-API-KEY",
     generationConfig = generationConfig {
         temperature = 1f
         topK = 64
