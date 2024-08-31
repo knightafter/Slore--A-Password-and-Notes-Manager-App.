@@ -2,8 +2,7 @@
 
    👉  ![WhatsApp Image 2024-07-30 at 9 25 34 PM](https://github.com/user-attachments/assets/0af4b82d-e40d-4d59-975b-4dc38a910b4f) 👈
 
-   ### 🔎 Setup of the App is in the below of the readme file so make sure to read all the file for fully implementation of the App in Android Studio, Youtube video also attached below 
-   ### for the easiness.
+   ### 🔎 Setup of the App is in the below of the readme file so make sure to read all the file for fully implementation of the App in Android Studio.
 
 ## Dependency on third party:
 
